@@ -32,7 +32,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Tooltip.Provider delayDuration={300}>{children}</Tooltip.Provider>
+          <Tooltip.Provider delayDuration={600}>{children}</Tooltip.Provider>
         </ThemeProvider>
       </body>
     </html>

@@ -12,9 +12,15 @@ import {
   RiCloseCircleFill,
   RiFullscreenLine,
   RiLink,
+  RiLinkM,
   RiListUnordered,
   RiLoader4Line,
   RiMoreFill,
+  RiOpenaiFill,
+  RiSearchLine,
+  RiShareLine,
+  RiSparkling2Fill,
+  RiWrenchLine,
 } from "@remixicon/react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
@@ -29,9 +35,9 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import {
   SegmentedControl,
   SegmentedControlList,
-  SegmentedControlPanel,
   SegmentedControlTab,
 } from "@/components/ui/segmented-control";
+import * as TabMenuHorizontal from "@/components/ui/tab-menu-horizontal";
 import * as Tooltip from "@/components/ui/tooltip";
 
 // --- Types ---
@@ -122,7 +128,7 @@ function Header() {
             size='xxsmall'
             className='size-7 cursor-pointer rounded-lg p-0'
           >
-            <Button.Icon as={RiFullscreenLine} className='text-text-soft-400' />
+            <Button.Icon as={RiFullscreenLine} className='text-text-soft-400 size-4' />
           </Button.Root>
         </Tooltip.Trigger>
         <Tooltip.Content>Open in full page</Tooltip.Content>
@@ -188,6 +194,32 @@ function Header() {
           </Button.Root>
         </Tooltip.Trigger>
         <Tooltip.Content>More</Tooltip.Content>
+      </Tooltip.Root>
+      <Tooltip.Root>
+        <Tooltip.Trigger asChild>
+          <Button.Root
+            variant='neutral'
+            mode='ghost'
+            size='xxsmall'
+            className='size-7 cursor-pointer rounded-lg p-0'
+          >
+            <Button.Icon as={RiShareLine} className='text-text-soft-400 size-4' />
+          </Button.Root>
+        </Tooltip.Trigger>
+        <Tooltip.Content>Share</Tooltip.Content>
+      </Tooltip.Root>
+      <Tooltip.Root>
+        <Tooltip.Trigger asChild>
+          <Button.Root
+            variant='neutral'
+            mode='ghost'
+            size='xxsmall'
+            className='size-7 cursor-pointer rounded-lg p-0'
+          >
+            <Button.Icon as={CopyIcon} className='text-text-soft-400 size-4' />
+          </Button.Root>
+        </Tooltip.Trigger>
+        <Tooltip.Content>Copy Run</Tooltip.Content>
       </Tooltip.Root>
     </div>
   );
@@ -297,11 +329,26 @@ const statusDotColor = {
 } as const;
 
 const typeColor: Record<string, string> = {
-  llm: "bg-purple-500",
-  tool: "bg-sky-500",
+  llm: "bg-amber-400",
+  tool: "bg-emerald-500",
   chain: "bg-blue-500",
-  retriever: "bg-teal-500",
+  retriever: "bg-pink-500",
 };
+
+function getSpanIcon(span: FlatSpan) {
+  // LLM calls - detect by name
+  const name = span.name.toLowerCase();
+  if (span.type === "llm") {
+    if (name.includes("openai") || name.includes("gpt")) return RiOpenaiFill;
+    return RiSparkling2Fill; // Anthropic / generic LLM
+  }
+  if (span.type === "tool") {
+    if (name.includes("search")) return RiSearchLine;
+    return RiWrenchLine;
+  }
+  // chain / root spans
+  return RiLinkM;
+}
 
 // --- Body (Summary + View Toggle + Split Layout) ---
 
@@ -312,56 +359,39 @@ function Body() {
   const [viewMode, setViewMode] = useState<ViewMode>("tree");
   const [selectedSpanId, setSelectedSpanId] = useState<string | null>(spans[0]?.id ?? null);
   const selectedSpan = spans.find((s) => s.id === selectedSpanId) ?? null;
-  const rootSpan = spans.find((s) => s.parentId === null);
+  // const rootSpan = spans.find((s) => s.parentId === null);
 
   return (
     <>
-      {/* Summary bar */}
-      <div className='border-faded-lighter dark:border-stroke-soft-200 flex items-center gap-4 border-b px-3 py-1.5 text-[12px]'>
-        <span className='text-text-sub-600'>
-          Duration:{" "}
-          <span className='text-text-strong-950 font-mono'>
-            {formatDuration(rootSpan?.latencyMs ?? null)}
-          </span>
-        </span>
-        <span className='text-text-sub-600'>
-          Tokens:{" "}
-          <span className='text-text-strong-950 font-mono'>
-            {formatTokens(rootSpan?.traceTotalTokens ?? null)}
-          </span>
-        </span>
-        <span className='text-text-sub-600'>
-          Cost:{" "}
-          <span className='text-text-strong-950 font-mono'>
-            {formatCost(rootSpan?.traceTotalCostUsd ?? null)}
-          </span>
-        </span>
-        <div className='ml-auto'>
-          <SegmentedControl value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
-            <SegmentedControlList
-              className='h-7'
-              style={
-                {
-                  "--active-tab-height": "28px !important",
-                } as React.CSSProperties
-              }
-            >
-              <SegmentedControlTab value='tree' className='px-2 text-[11px]!'>
-                <RiListUnordered className='size-3' />
-                Tree
-              </SegmentedControlTab>
-              <SegmentedControlTab value='waterfall' className='px-2 text-[11px]!'>
-                <RiBarChartHorizontalLine className='size-3' />
-                Waterfall
-              </SegmentedControlTab>
-            </SegmentedControlList>
-          </SegmentedControl>
-        </div>
-      </div>
-
       {/* Split: Span list + Span detail */}
       <ResizablePanelGroup orientation='horizontal' className='min-h-0 flex-1'>
-        <ResizablePanel defaultSize='50%' minSize='25%'>
+        <ResizablePanel defaultSize='50%' minSize='40%'>
+          <div className='border-faded-lighter dark:border-stroke-soft-200 flex items-center gap-4 border-b px-3 py-1.5 text-[12px]'>
+            <div className='text-text-sub-600 text-[13px]'>Trace</div>
+
+            <div className='ml-auto'>
+              <SegmentedControl value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
+                <SegmentedControlList
+                  className='h-7'
+                  style={
+                    {
+                      "--active-tab-height": "28px !important",
+                    } as React.CSSProperties
+                  }
+                >
+                  <SegmentedControlTab value='tree' className='px-2 text-[11px]!'>
+                    <RiListUnordered className='size-3' />
+                    Tree
+                  </SegmentedControlTab>
+                  <SegmentedControlTab value='waterfall' className='px-2 text-[11px]!'>
+                    <RiBarChartHorizontalLine className='size-3' />
+                    Waterfall
+                  </SegmentedControlTab>
+                </SegmentedControlList>
+              </SegmentedControl>
+            </div>
+          </div>
+
           <div className='no-scrollbar h-full overflow-auto'>
             {viewMode === "tree" ? (
               <SpanTree spans={spans} selectedId={selectedSpanId} onSelect={setSelectedSpanId} />
@@ -574,18 +604,12 @@ function WaterfallView({
   return (
     <div className='p-2'>
       {/* Time ruler */}
-      <div
-        className='text-text-sub-600 mb-1 flex items-center px-2'
-        style={{ paddingLeft: "120px" }}
-      >
-        <div className='flex flex-1 justify-between font-mono text-[10px] tabular-nums'>
-          <span>0ms</span>
-          <span>{formatDuration(totalDuration / 4)}</span>
-          <span>{formatDuration(totalDuration / 2)}</span>
-          <span>{formatDuration((totalDuration * 3) / 4)}</span>
-          <span>{formatDuration(totalDuration)}</span>
-        </div>
-        <span className='w-12 shrink-0' />
+      <div className='text-text-sub-600 mb-1 flex justify-between px-2 font-mono text-[10px] tabular-nums'>
+        <span>0ms</span>
+        <span>{formatDuration(totalDuration / 4)}</span>
+        <span>{formatDuration(totalDuration / 2)}</span>
+        <span>{formatDuration((totalDuration * 3) / 4)}</span>
+        <span>{formatDuration(totalDuration)}</span>
       </div>
 
       {sortedSpans.map((span) => {
@@ -600,32 +624,37 @@ function WaterfallView({
           <div
             key={span.id}
             className={cn(
-              "flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 transition-colors",
+              "relative cursor-pointer rounded-md px-2 py-1.5 transition-colors",
               selectedId === span.id ? "bg-bg-weak-50" : "hover:bg-bg-weak-50/50",
             )}
-            style={{ paddingLeft: `${span.depth * 12 + 8}px` }}
+            style={{ paddingLeft: `${span.depth * 16 + 8}px` }}
             onClick={() => onSelect(span.id)}
           >
-            <span className={cn("size-1.5 shrink-0 rounded-full", statusDotColor[span.status])} />
-            <span
-              className='text-text-strong-950 min-w-0 shrink-0 truncate text-[11px]'
-              style={{ maxWidth: "100px" }}
-            >
-              {span.name}
-            </span>
-            <div className='relative ml-auto h-4 min-w-[80px] flex-1'>
-              <div className='bg-bg-soft-200 absolute inset-0 rounded-sm' />
+            {/* Full-width progress bar */}
+            <div className='relative h-6 w-full rounded-sm'>
               <div
                 className={cn(
-                  "absolute top-0.5 bottom-0.5 rounded-sm opacity-80",
+                  "absolute inset-y-0 rounded-sm",
                   typeColor[span.type] ?? "bg-gray-400",
                 )}
-                style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
+                style={{ left: `${leftPct}%`, width: `${widthPct}%`, opacity: 0.2 }}
               />
+              {/* Name + latency positioned at the span bar */}
+              <div
+                className='absolute inset-y-0 flex items-center gap-1.5 px-1.5'
+                style={{ left: `${leftPct}%` }}
+              >
+                {React.createElement(getSpanIcon(span), {
+                  className: cn("size-3 shrink-0", statusColor[span.status]),
+                })}
+                <span className='text-text-strong-950 truncate text-[11px] font-medium'>
+                  {span.name}
+                </span>
+                <span className='text-text-sub-600 shrink-0 font-mono text-[10px] tabular-nums'>
+                  {formatDuration(span.latencyMs)}
+                </span>
+              </div>
             </div>
-            <span className='text-text-sub-600 w-12 shrink-0 text-right font-mono text-[10px] tabular-nums'>
-              {formatDuration(span.latencyMs)}
-            </span>
           </div>
         );
       })}
@@ -633,54 +662,93 @@ function WaterfallView({
   );
 }
 
-// --- Span Detail Tabs ---
+// --- Span Detail (Scroll-based tab navigation) ---
 
 function SpanDetail({ span }: { span: FlatSpan }) {
   const hasError = !!span.error;
   const hasAttributes =
     span.type === "llm" && (span.model || span.totalTokens != null || span.costUsd != null);
 
+  const sections = React.useMemo(() => {
+    const s: { id: string; label: string }[] = [
+      { id: "input", label: "Input" },
+      { id: "output", label: "Output" },
+    ];
+    if (hasError) s.push({ id: "error", label: "Error" });
+    if (hasAttributes) s.push({ id: "attributes", label: "Attributes" });
+    s.push({ id: "metadata", label: "Metadata" });
+    return s;
+  }, [hasError, hasAttributes]);
+
+  const [activeTab, setActiveTab] = useState(hasError ? "error" : "input");
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const sectionRefs = React.useRef<Map<string, HTMLElement>>(new Map());
+
+  const scrollToSection = (id: string) => {
+    setActiveTab(id);
+    const el = sectionRefs.current.get(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  React.useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const section = entry.target.getAttribute("data-section");
+            if (section) setActiveTab(section);
+          }
+        }
+      },
+      { root: container, rootMargin: "-10% 0px -80% 0px", threshold: 0 },
+    );
+
+    for (const el of sectionRefs.current.values()) observer.observe(el);
+    return () => observer.disconnect();
+  }, [span.id]);
+
+  const setSectionRef = (id: string) => (el: HTMLElement | null) => {
+    if (el) sectionRefs.current.set(id, el);
+    else sectionRefs.current.delete(id);
+  };
+
   return (
-    <div className='flex h-full flex-col p-3'>
+    <div className='flex h-full flex-col'>
       {/* Span header */}
-      <div className='mb-2 flex items-center gap-2'>
-        <h3 className='text-text-strong-950 truncate text-[13px] font-medium'>{span.name}</h3>
-        <Badge.Root
-          color={span.status === "success" ? "green" : span.status === "error" ? "red" : "orange"}
-          variant='light'
-          className='px-1.5 text-[10px]'
-        >
-          {span.status}
-        </Badge.Root>
-        <Badge.Root color='gray' variant='light' className='ml-auto px-1.5 text-[10px]'>
-          {span.type}
-        </Badge.Root>
+      <div className='border-faded-lighter dark:border-stroke-soft-200 shrink-0 border-b px-3 py-2'>
+        <div className='flex items-center gap-2'>
+          <h3 className='text-text-strong-950 truncate text-[13px] font-medium'>{span.name}</h3>
+          <Badge.Root
+            color={span.status === "success" ? "green" : span.status === "error" ? "red" : "orange"}
+            variant='light'
+            className='px-1.5 text-[10px]'
+          >
+            {span.status}
+          </Badge.Root>
+          <Badge.Root color='gray' variant='light' className='ml-auto px-1.5 text-[10px]'>
+            {span.type}
+          </Badge.Root>
+        </div>
       </div>
 
-      <SegmentedControl defaultValue={hasError ? "error" : "input"}>
-        <SegmentedControlList className='h-7 w-fit'>
-          <SegmentedControlTab value='input' className='px-2 text-[11px]!'>
-            Input
-          </SegmentedControlTab>
-          <SegmentedControlTab value='output' className='px-2 text-[11px]!'>
-            Output
-          </SegmentedControlTab>
-          {hasError && (
-            <SegmentedControlTab value='error' className='text-error-base px-2 text-[11px]!'>
-              Error
-            </SegmentedControlTab>
-          )}
-          {hasAttributes && (
-            <SegmentedControlTab value='attributes' className='px-2 text-[11px]!'>
-              Attributes
-            </SegmentedControlTab>
-          )}
-          <SegmentedControlTab value='metadata' className='px-2 text-[11px]!'>
-            Metadata
-          </SegmentedControlTab>
-        </SegmentedControlList>
+      {/* Tab navigation */}
+      <TabMenuHorizontal.Root value={activeTab} onValueChange={scrollToSection}>
+        <TabMenuHorizontal.List className='border-faded-lighter h-9 gap-4 border-t-0 px-3'>
+          {sections.map((s) => (
+            <TabMenuHorizontal.Trigger key={s.id} value={s.id} className={cn("h-9 text-[12px]")}>
+              {s.label}
+            </TabMenuHorizontal.Trigger>
+          ))}
+        </TabMenuHorizontal.List>
+      </TabMenuHorizontal.Root>
 
-        <SegmentedControlPanel value='input' className='mt-2'>
+      {/* Scrollable sections */}
+      <div ref={containerRef} className='no-scrollbar flex-1 overflow-auto px-3 py-2'>
+        <section ref={setSectionRef("input")} data-section='input' className='mb-6'>
+          <SectionLabel>Input</SectionLabel>
           {span.input ? (
             <pre className='bg-bg-weak-50 border-stroke-soft-200 overflow-auto rounded-md border p-3 font-mono text-[11px] break-all whitespace-pre-wrap'>
               {JSON.stringify(span.input, null, 2)}
@@ -688,9 +756,10 @@ function SpanDetail({ span }: { span: FlatSpan }) {
           ) : (
             <p className='text-text-sub-600 text-[12px]'>No input data</p>
           )}
-        </SegmentedControlPanel>
+        </section>
 
-        <SegmentedControlPanel value='output' className='mt-2'>
+        <section ref={setSectionRef("output")} data-section='output' className='mb-6'>
+          <SectionLabel>Output</SectionLabel>
           {span.output ? (
             <pre className='bg-bg-weak-50 border-stroke-soft-200 overflow-auto rounded-md border p-3 font-mono text-[11px] break-all whitespace-pre-wrap'>
               {JSON.stringify(span.output, null, 2)}
@@ -702,20 +771,22 @@ function SpanDetail({ span }: { span: FlatSpan }) {
           ) : (
             <p className='text-text-sub-600 text-[12px]'>No output data</p>
           )}
-        </SegmentedControlPanel>
+        </section>
 
         {hasError && (
-          <SegmentedControlPanel value='error' className='mt-2'>
+          <section ref={setSectionRef("error")} data-section='error' className='mb-6'>
+            <SectionLabel className='text-error-base'>Error</SectionLabel>
             <div className='border-error-base/30 bg-error-base/5 rounded-md border p-3'>
               <pre className='text-error-base/90 font-mono text-[11px] break-all whitespace-pre-wrap'>
                 {span.error}
               </pre>
             </div>
-          </SegmentedControlPanel>
+          </section>
         )}
 
         {hasAttributes && (
-          <SegmentedControlPanel value='attributes' className='mt-2'>
+          <section ref={setSectionRef("attributes")} data-section='attributes' className='mb-6'>
+            <SectionLabel>Attributes</SectionLabel>
             <div className='grid grid-cols-2 gap-3 text-[12px]'>
               {span.model && <Attr label='Model' value={span.model} />}
               {span.promptTokens != null && (
@@ -732,10 +803,11 @@ function SpanDetail({ span }: { span: FlatSpan }) {
                 <Attr label='Latency' value={formatDuration(span.latencyMs)} />
               )}
             </div>
-          </SegmentedControlPanel>
+          </section>
         )}
 
-        <SegmentedControlPanel value='metadata' className='mt-2'>
+        <section ref={setSectionRef("metadata")} data-section='metadata' className='mb-6'>
+          <SectionLabel>Metadata</SectionLabel>
           <div className='grid grid-cols-2 gap-3 text-[12px]'>
             <Attr label='Span ID' value={span.id} mono />
             <Attr label='Type' value={span.type} />
@@ -748,9 +820,19 @@ function SpanDetail({ span }: { span: FlatSpan }) {
             )}
             {span.parentId && <Attr label='Parent ID' value={span.parentId} mono />}
           </div>
-        </SegmentedControlPanel>
-      </SegmentedControl>
+        </section>
+
+        <div className='h-[60vh]' aria-hidden='true'></div>
+      </div>
     </div>
+  );
+}
+
+function SectionLabel({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <h4 className={cn("text-text-strong-950 mb-2 text-[12px] font-medium", className)}>
+      {children}
+    </h4>
   );
 }
 

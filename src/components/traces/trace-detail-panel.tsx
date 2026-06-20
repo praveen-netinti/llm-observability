@@ -12,6 +12,7 @@ import {
   RiLoader4Line,
   RiMoreFill,
 } from "@remixicon/react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 
@@ -48,7 +49,16 @@ function Root({ traceId, children }: { traceId: string; children: React.ReactNod
 
   return (
     <PanelContext.Provider value={{ traceId, spans, close }}>
-      <div className='flex h-full flex-col'>{children}</div>
+      <DialogPrimitive.Root open onOpenChange={(open) => { if (!open) close(); }}>
+        <DialogPrimitive.Content
+          aria-describedby={undefined}
+          onInteractOutside={(e) => e.preventDefault()}
+          className='flex h-full flex-col focus:outline-none'
+        >
+          <DialogPrimitive.Title className='sr-only'>Trace Detail</DialogPrimitive.Title>
+          {children}
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Root>
     </PanelContext.Provider>
   );
 }

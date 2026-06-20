@@ -1,7 +1,9 @@
 "use client";
 
 import React, { SVGProps, useMemo } from "react";
+import { useIssues } from "@/contexts/issues-context";
 import { useSidebar } from "@/contexts/sidebar-context";
+import slackCards from "@/data/slack-cards.json";
 import {
   RiArrowDownLongLine,
   RiArrowRightSLine,
@@ -28,9 +30,8 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { FlatSpan, flatSpans } from "@/lib/flatten-traces";
 import { cn } from "@/utils";
+
 import { notification } from "@/hooks/use-notification";
-import { useIssues } from "@/contexts/issues-context";
-import slackCards from "@/data/slack-cards.json";
 
 import { TimeRangeFilter } from "@/components/traces/time-range-filter";
 import { TraceDetailPanel } from "@/components/traces/trace-detail-panel";
@@ -176,24 +177,29 @@ export default function TracesLayout() {
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
 
   const showSlackAlert = (traceId: string) => {
-    const card = slackCards.messages.find(
-      (m) => m.traceId === traceId && m.lifecycle === "alert",
-    );
+    const card = slackCards.messages.find((m) => m.traceId === traceId && m.lifecycle === "alert");
     const trace = traceRows.find((r) => r.traceId === traceId);
-    const headerBlock = card?.blocks.find((b) => b.type === "header") as { text: { text: string } } | undefined;
-    const sectionBlock = card?.blocks.find((b) => b.type === "section") as { text?: { text: string } } | undefined;
-    const title = headerBlock?.text?.text?.replace(/:[a-z_]+:/g, "🚨 ").trim() ?? `Trace failed — ${trace?.traceName ?? traceId}`;
+    const headerBlock = card?.blocks.find((b) => b.type === "header") as
+      | { text: { text: string } }
+      | undefined;
+    const sectionBlock = card?.blocks.find((b) => b.type === "section") as
+      | { text?: { text: string } }
+      | undefined;
+    const title =
+      headerBlock?.text?.text?.replace(/:[a-z_]+:/g, "🚨 ").trim() ??
+      `Trace failed — ${trace?.traceName ?? traceId}`;
     const body = sectionBlock?.text?.text ?? trace?.error ?? "An error occurred in this trace.";
 
     notification({
       status: "error",
+      variant: "stroke",
       title,
       description: (
-        <div className="flex flex-col gap-2">
-          <p className="text-paragraph-xs m-0">{body.replace(/\*/g, "").replace(/`/g, "")}</p>
-          <div className="flex gap-2 mt-1">
+        <div className='flex flex-col gap-2'>
+          <p className='text-paragraph-xs m-0'>{body.replace(/\*/g, "").replace(/`/g, "")}</p>
+          <div className='mt-1 flex gap-2'>
             <button
-              className="rounded-md bg-primary-base px-2.5 py-1 text-[11px] font-medium text-static-white hover:bg-primary-darker transition-colors"
+              className='bg-primary-base text-static-white hover:bg-primary-darker rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors'
               onClick={() => {
                 addIssue({
                   title: title.replace("🚨 ", ""),
@@ -211,7 +217,7 @@ export default function TracesLayout() {
               Create issue
             </button>
             <button
-              className="rounded-md border border-stroke-soft-200 bg-bg-white-0 px-2.5 py-1 text-[11px] font-medium text-text-sub-600 hover:bg-bg-weak-50 transition-colors"
+              className='border-stroke-soft-200 bg-bg-white-0 text-text-sub-600 hover:bg-bg-weak-50 rounded-md border px-2.5 py-1 text-[11px] font-medium transition-colors'
               onClick={() => router.push(`/traces/${traceId}`)}
             >
               View Trace

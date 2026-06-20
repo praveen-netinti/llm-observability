@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  RiAlarmWarningLine,
   RiAlertLine,
   RiBarChartBoxLine,
   RiDashboardLine,
@@ -83,6 +84,7 @@ export const sidebarData: SidebarData = {
         { id: "dashboard", label: "Dashboard", icon: RiDashboardLine, href: "/" },
         { id: "traces", label: "Traces", icon: RiFlowChart, href: "/traces" },
         { id: "issues", label: "Issues", icon: RiAlertLine, href: "/issues", badge: "3" },
+        { id: "alerts", label: "Alerts", icon: RiAlarmWarningLine, href: "/alerts" },
         { id: "playground", label: "Playground", icon: RiPlayCircleLine, href: "/playground" },
       ],
     },

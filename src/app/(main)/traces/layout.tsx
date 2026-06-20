@@ -29,6 +29,9 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { FlatSpan, flatSpans } from "@/lib/flatten-traces";
 import { cn } from "@/utils";
+import { notification } from "@/hooks/use-notification";
+import { useIssues } from "@/contexts/issues-context";
+import slackCards from "@/data/slack-cards.json";
 
 import { TraceDetailPanel } from "@/components/traces/trace-detail-panel";
 import * as Badge from "@/components/ui/badge";
@@ -166,10 +169,59 @@ export default function TracesLayout() {
   const { onMenuClick } = useSidebar();
   const pathname = usePathname();
   const router = useRouter();
+  const { addIssue } = useIssues();
 
   const [sorting, setSorting] = React.useState<SortingState>([{ id: "startTime", desc: true }]);
   const [search, setSearch] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
+
+  const showSlackAlert = (traceId: string) => {
+    const card = slackCards.messages.find(
+      (m) => m.traceId === traceId && m.lifecycle === "alert",
+    );
+    const trace = traceRows.find((r) => r.traceId === traceId);
+    const headerBlock = card?.blocks.find((b) => b.type === "header") as { text: { text: string } } | undefined;
+    const sectionBlock = card?.blocks.find((b) => b.type === "section") as { text?: { text: string } } | undefined;
+    const title = headerBlock?.text?.text?.replace(/:[a-z_]+:/g, "🚨 ").trim() ?? `Trace failed — ${trace?.traceName ?? traceId}`;
+    const body = sectionBlock?.text?.text ?? trace?.error ?? "An error occurred in this trace.";
+
+    notification({
+      status: "error",
+      title,
+      description: (
+        <div className="flex flex-col gap-2">
+          <p className="text-paragraph-xs m-0">{body.replace(/\*/g, "").replace(/`/g, "")}</p>
+          <div className="flex gap-2 mt-1">
+            <button
+              className="rounded-md bg-primary-base px-2.5 py-1 text-[11px] font-medium text-static-white hover:bg-primary-darker transition-colors"
+              onClick={() => {
+                addIssue({
+                  title: title.replace("🚨 ", ""),
+                  description: body.replace(/\*/g, "").replace(/`/g, ""),
+                  status: "todo",
+                  priority: "high",
+                  assignee: null,
+                  labels: ["bug"],
+                  project: null,
+                  traceId,
+                });
+                router.push("/issues");
+              }}
+            >
+              Create issue
+            </button>
+            <button
+              className="rounded-md border border-stroke-soft-200 bg-bg-white-0 px-2.5 py-1 text-[11px] font-medium text-text-sub-600 hover:bg-bg-weak-50 transition-colors"
+              onClick={() => router.push(`/traces/${traceId}`)}
+            >
+              View Trace
+            </button>
+          </div>
+        </div>
+      ),
+      duration: 15000,
+    });
+  };
 
   // Extract traceId from pathname: /traces/[traceId]
   const traceId = pathname.match(/\/traces\/([^/]+)/)?.[1] ?? null;
@@ -266,7 +318,11 @@ export default function TracesLayout() {
               type='button'
               className='border-stroke-soft-200 bg-bg-white-0 text-2xs text-text-sub-600 absolute inset-y-0 right-0 flex h-6 w-fit cursor-pointer items-center gap-1 rounded-md border px-1.5 uppercase opacity-0 group-hover/cell:opacity-100'
               onClick={() => {
-                router.push(`/traces/${row.original.traceId}`);
+                const trId = row.original.traceId;
+                router.push(`/traces/${trId}`);
+                if (row.original.traceStatus === "error") {
+                  showSlackAlert(trId);
+                }
               }}
             >
               <RiLayoutRight2Line className='size-4' />

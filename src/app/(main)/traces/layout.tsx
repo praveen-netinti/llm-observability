@@ -1,6 +1,6 @@
 "use client";
 
-import React, { SVGProps } from "react";
+import React, { SVGProps, useMemo } from "react";
 import { useSidebar } from "@/contexts/sidebar-context";
 import {
   RiArrowDownLongLine,
@@ -12,6 +12,7 @@ import {
   RiFilter3Line,
   RiHourglassLine,
   RiLayoutLeft2Line,
+  RiLayoutRight2Line,
   RiLoader4Line,
   RiSearchLine,
 } from "@remixicon/react";
@@ -161,176 +162,6 @@ function DataColumnHeader({ column, label }: { label: string; column: Column<Fla
   );
 }
 
-const columns: ColumnDef<FlatSpan>[] = [
-  {
-    id: "select",
-    // header: ({ table }) => (
-    //   <Checkbox.Root
-    //     checked={
-    //       table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")
-    //     }
-    //     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-    //     aria-label='Select all'
-    //   />
-    // ),
-    cell: ({ row }) => (
-      <Checkbox.Root
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label='Select row'
-        // className='opacity-0 group-hover/row:opacity-100! group-data-selected-true/row:opacity-100!'
-        className={cn(
-          "transition-all duration-200 ease-out",
-          "opacity-0",
-
-          // Show on row hover
-          "group-hover/row:opacity-100",
-
-          // Keep visible when selected
-          "group-data-[selected=true]/row:opacity-100",
-
-          // Keep visible when keyboard focused
-          "focus-visible:opacity-100",
-
-          // Keep visible while interacting
-          "hover:opacity-100",
-
-          // Optional subtle scale animation
-          "scale-95 group-hover/row:scale-100 group-data-[selected=true]/row:scale-100",
-        )}
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    id: "status",
-    accessorKey: "traceStatus",
-    header: () => <></>,
-    cell: ({ row }) => {
-      const cfg = statusConfig[row.original.traceStatus];
-      return (
-        <div className='grid w-full place-items-center'>
-          <StatusBadge.Icon
-            as={cfg.icon}
-            className={cn(
-              cfg.variant === "pending" && "animate-spin",
-              cfg.variant === "completed" && "text-success-base",
-              cfg.variant === "pending" && "text-warning-base",
-              cfg.variant === "failed" && "text-error-base",
-            )}
-          />
-        </div>
-      );
-    },
-  },
-  {
-    id: "name",
-    accessorKey: "traceName",
-    header: ({ column }) => <DataColumnHeader column={column} label='Name' />,
-    cell: ({ row }) => <span className='text-text-strong-950 px-2'>{row.original.name}</span>,
-  },
-  // {
-  //   id: "input",
-  //   accessorKey: "input",
-  //   header: () => <div className='min-w-44'>Input</div>,
-  //   enableSorting: false,
-  //   cell: ({ row }) => (
-  //     <span className='text-text-sub-600 block max-w-52 truncate'>
-  //       {truncateJson(row.original.input)}
-  //     </span>
-  //   ),
-  // },
-  // {
-  //   id: "output",
-  //   accessorKey: "output",
-  //   header: () => <div className='min-w-44'>Output</div>,
-  //   enableSorting: false,
-  //   cell: ({ row }) => (
-  //     <span className='text-text-sub-600 block max-w-52 truncate'>
-  //       {truncateJson(row.original.output)}
-  //     </span>
-  //   ),
-  // },
-  // {
-  //   id: "error",
-  //   accessorKey: "error",
-  //   header: () => "Error",
-  //   enableSorting: false,
-  //   cell: ({ row }) => (
-  //     <span className='text-error-base block max-w-44 truncate'>{row.original.error ?? "—"}</span>
-  //   ),
-  // },
-  {
-    id: "startTime",
-    accessorKey: "traceStartTime",
-    header: ({ column }) => <DataColumnHeader label='Start time' column={column} />,
-    cell: ({ row }) => (
-      <span className='text-text-sub-600 px-2 whitespace-nowrap'>
-        {formatTime(row.original.traceStartTime)}
-      </span>
-    ),
-  },
-  {
-    id: "latency",
-    accessorKey: "traceLatencyMs",
-    header: ({ column }) => <DataColumnHeader label='Latency' column={column} />,
-    cell: ({ row }) => {
-      const latency = row.original.traceLatencyMs;
-      if (latency == null) return null;
-      return (
-        <Badge.Root
-          color={getLatencyBadgeColor(latency)}
-          variant='light'
-          className='mx-2 px-1.5 lowercase'
-        >
-          {formatLatency(latency)}
-        </Badge.Root>
-      );
-    },
-  },
-  {
-    id: "tokens",
-    accessorKey: "traceTotalTokens",
-    header: ({ column }) => <DataColumnHeader label='Tokens' column={column} />,
-    cell: ({ row }) => (
-      <span className='text-text-sub-600 px-3'>{formatTokens(row.original.traceTotalTokens)}</span>
-    ),
-  },
-  {
-    id: "cost",
-    accessorKey: "traceTotalCostUsd",
-    header: ({ column }) => <DataColumnHeader label='Cost' column={column} />,
-    cell: ({ row }) => (
-      <span className='text-text-sub-600 px-3'>{formatCost(row.original.traceTotalCostUsd)}</span>
-    ),
-  },
-  {
-    id: "tags",
-    accessorKey: "traceTags",
-    header: ({ column }) => <DataColumnHeader label='Tags' column={column} />,
-    enableSorting: false,
-    cell: ({ row }) => (
-      <div className='flex gap-1'>
-        {row.original.traceTags.slice(0, 2).map((tag) => (
-          <span
-            key={tag}
-            className='bg-bg-soft-200 text-text-sub-600 rounded-md px-1.5 py-0.5 text-[11px] leading-4 font-medium text-nowrap'
-          >
-            {tag}
-          </span>
-        ))}
-
-        {row.original.traceTags.length > 2 && (
-          <span className='bg-bg-soft-200 text-text-sub-600 rounded-md px-1.5 py-0.5 text-[11px] leading-4 font-medium text-nowrap'>
-            +{row.original.traceTags.length - 2} more
-          </span>
-        )}
-      </div>
-    ),
-  },
-];
-
 export default function TracesLayout() {
   const { onMenuClick } = useSidebar();
   const pathname = usePathname();
@@ -342,6 +173,198 @@ export default function TracesLayout() {
   const traceId = pathname.match(/\/traces\/([^/]+)/)?.[1] ?? null;
   const spans = traceId ? flatSpans.filter((s) => s.traceId === traceId) : [];
   const showPanel = !!traceId && spans.length > 0;
+
+  const columns: ColumnDef<FlatSpan>[] = useMemo(
+    () => [
+      {
+        id: "select",
+        // header: ({ table }) => (
+        //   <Checkbox.Root
+        //     checked={
+        //       table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")
+        //     }
+        //     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        //     aria-label='Select all'
+        //   />
+        // ),
+        cell: ({ row }) => (
+          <Checkbox.Root
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label='Select row'
+            // className='opacity-0 group-hover/row:opacity-100! group-data-selected-true/row:opacity-100!'
+            className={cn(
+              "transition-all duration-200 ease-out",
+              "opacity-0",
+
+              // Show on row hover
+              "group-hover/row:opacity-100",
+
+              // Keep visible when selected
+              "group-data-[selected=true]/row:opacity-100",
+
+              // Keep visible when keyboard focused
+              "focus-visible:opacity-100",
+
+              // Keep visible while interacting
+              "hover:opacity-100",
+
+              // Optional subtle scale animation
+              "scale-95 group-hover/row:scale-100 group-data-[selected=true]/row:scale-100",
+            )}
+          />
+        ),
+        enableSorting: false,
+        enableHiding: false,
+      },
+      {
+        id: "status",
+        accessorKey: "traceStatus",
+        header: () => <></>,
+        cell: ({ row }) => {
+          const cfg = statusConfig[row.original.traceStatus];
+          return (
+            <div className='grid w-full place-items-center'>
+              <StatusBadge.Icon
+                as={cfg.icon}
+                className={cn(
+                  cfg.variant === "pending" && "animate-spin",
+                  cfg.variant === "completed" && "text-success-base",
+                  cfg.variant === "pending" && "text-warning-base",
+                  cfg.variant === "failed" && "text-error-base",
+                )}
+              />
+            </div>
+          );
+        },
+      },
+      {
+        id: "name",
+        accessorKey: "traceName",
+        header: ({ column }) => <DataColumnHeader column={column} label='Name' />,
+        cell: ({ row }) => (
+          <div className='relative w-full'>
+            <span className='text-text-strong-950 px-2'>{row.original.name}</span>
+
+            <button
+              type='button'
+              className='border-stroke-soft-200 bg-bg-white-0 text-2xs text-text-sub-600 absolute inset-y-0 right-4 flex h-6 w-fit cursor-pointer items-center gap-1 rounded-md border px-1.5 uppercase opacity-0 group-hover/cell:opacity-100'
+              onClick={() => {
+                router.push(`/traces/${row.original.traceId}`);
+              }}
+            >
+              <RiLayoutRight2Line className='size-4' />
+              Open
+            </button>
+          </div>
+        ),
+      },
+      // {
+      //   id: "input",
+      //   accessorKey: "input",
+      //   header: () => <div className='min-w-44'>Input</div>,
+      //   enableSorting: false,
+      //   cell: ({ row }) => (
+      //     <span className='text-text-sub-600 block max-w-52 truncate'>
+      //       {truncateJson(row.original.input)}
+      //     </span>
+      //   ),
+      // },
+      // {
+      //   id: "output",
+      //   accessorKey: "output",
+      //   header: () => <div className='min-w-44'>Output</div>,
+      //   enableSorting: false,
+      //   cell: ({ row }) => (
+      //     <span className='text-text-sub-600 block max-w-52 truncate'>
+      //       {truncateJson(row.original.output)}
+      //     </span>
+      //   ),
+      // },
+      // {
+      //   id: "error",
+      //   accessorKey: "error",
+      //   header: () => "Error",
+      //   enableSorting: false,
+      //   cell: ({ row }) => (
+      //     <span className='text-error-base block max-w-44 truncate'>{row.original.error ?? "—"}</span>
+      //   ),
+      // },
+      {
+        id: "startTime",
+        accessorKey: "traceStartTime",
+        header: ({ column }) => <DataColumnHeader label='Start time' column={column} />,
+        cell: ({ row }) => (
+          <span className='text-text-sub-600 px-2 whitespace-nowrap'>
+            {formatTime(row.original.traceStartTime)}
+          </span>
+        ),
+      },
+      {
+        id: "latency",
+        accessorKey: "traceLatencyMs",
+        header: ({ column }) => <DataColumnHeader label='Latency' column={column} />,
+        cell: ({ row }) => {
+          const latency = row.original.traceLatencyMs;
+          if (latency == null) return null;
+          return (
+            <Badge.Root
+              color={getLatencyBadgeColor(latency)}
+              variant='light'
+              className='mx-2 px-1.5 lowercase'
+            >
+              {formatLatency(latency)}
+            </Badge.Root>
+          );
+        },
+      },
+      {
+        id: "tokens",
+        accessorKey: "traceTotalTokens",
+        header: ({ column }) => <DataColumnHeader label='Tokens' column={column} />,
+        cell: ({ row }) => (
+          <span className='text-text-sub-600 px-3'>
+            {formatTokens(row.original.traceTotalTokens)}
+          </span>
+        ),
+      },
+      {
+        id: "cost",
+        accessorKey: "traceTotalCostUsd",
+        header: ({ column }) => <DataColumnHeader label='Cost' column={column} />,
+        cell: ({ row }) => (
+          <span className='text-text-sub-600 px-3'>
+            {formatCost(row.original.traceTotalCostUsd)}
+          </span>
+        ),
+      },
+      {
+        id: "tags",
+        accessorKey: "traceTags",
+        header: ({ column }) => <DataColumnHeader label='Tags' column={column} />,
+        enableSorting: false,
+        cell: ({ row }) => (
+          <div className='flex gap-1'>
+            {row.original.traceTags.slice(0, 2).map((tag) => (
+              <span
+                key={tag}
+                className='bg-bg-soft-200 text-text-sub-600 rounded-md px-1.5 py-0.5 text-[11px] leading-4 font-medium text-nowrap'
+              >
+                {tag}
+              </span>
+            ))}
+
+            {row.original.traceTags.length > 2 && (
+              <span className='bg-bg-soft-200 text-text-sub-600 rounded-md px-1.5 py-0.5 text-[11px] leading-4 font-medium text-nowrap'>
+                +{row.original.traceTags.length - 2} more
+              </span>
+            )}
+          </div>
+        ),
+      },
+    ],
+    [router],
+  );
 
   const table = useReactTable({
     data: traceRows,
@@ -515,14 +538,7 @@ export default function TracesLayout() {
                         data-connected-bottom={(isSelected && nextSelected) || undefined}
                       >
                         {row.getVisibleCells().map((cell) => (
-                          <Table.Cell
-                            key={cell.id}
-                            className='text-[13px]'
-                            onClick={() => {
-                              if (cell.column.id === "name")
-                                router.push(`/traces/${row.original.traceId}`);
-                            }}
-                          >
+                          <Table.Cell key={cell.id} className='group/cell text-[13px]'>
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </Table.Cell>
                         ))}
@@ -555,4 +571,3 @@ export default function TracesLayout() {
     </div>
   );
 }
-

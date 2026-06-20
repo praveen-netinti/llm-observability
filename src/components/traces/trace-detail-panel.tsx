@@ -49,7 +49,7 @@ function Root({ traceId, children }: { traceId: string; children: React.ReactNod
 
   return (
     <PanelContext.Provider value={{ traceId, spans, close }}>
-      <DialogPrimitive.Root open onOpenChange={(open) => { if (!open) close(); }}>
+      <DialogPrimitive.Root modal={false} open onOpenChange={(open) => { if (!open) close(); }}>
         <DialogPrimitive.Content
           aria-describedby={undefined}
           onInteractOutside={(e) => e.preventDefault()}

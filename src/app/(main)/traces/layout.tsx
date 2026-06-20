@@ -10,7 +10,6 @@ import {
   RiCheckboxCircleFill,
   RiCloseCircleFill,
   RiFilter3Line,
-  RiHourglassLine,
   RiLayoutLeft2Line,
   RiLayoutRight2Line,
   RiLoader4Line,
@@ -33,6 +32,7 @@ import { notification } from "@/hooks/use-notification";
 import { useIssues } from "@/contexts/issues-context";
 import slackCards from "@/data/slack-cards.json";
 
+import { TimeRangeFilter } from "@/components/traces/time-range-filter";
 import { TraceDetailPanel } from "@/components/traces/trace-detail-panel";
 import * as Badge from "@/components/ui/badge";
 import * as Breadcrumb from "@/components/ui/breadcrumb";
@@ -514,15 +514,7 @@ export default function TracesLayout() {
                 </Select.Content>
               </Select.Root>
 
-              <Button.Root
-                variant='neutral'
-                mode='stroke'
-                size='xxsmall'
-                className='gap-2 px-3 text-[13px]'
-              >
-                <Button.Icon as={RiHourglassLine} className='size-3.5' />
-                Last 1 day
-              </Button.Root>
+              <TimeRangeFilter />
 
               <SegmentedControl>
                 <SegmentedControlList

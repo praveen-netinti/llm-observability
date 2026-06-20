@@ -28,6 +28,7 @@ import {
 import { FlatSpan, flatSpans } from "@/lib/flatten-traces";
 import { cn } from "@/utils";
 
+import * as Badge from "@/components/ui/badge";
 import * as Breadcrumb from "@/components/ui/breadcrumb";
 import * as Button from "@/components/ui/button";
 import * as Checkbox from "@/components/ui/checkbox";
@@ -70,6 +71,28 @@ function formatLatency(ms: number | null): string {
   if (ms === null) return "";
   if (ms < 1000) return `${ms}ms`;
   return `${(ms / 1000).toFixed(2)}s`;
+}
+
+type BadgeColor =
+  | "gray"
+  | "blue"
+  | "orange"
+  | "red"
+  | "green"
+  | "yellow"
+  | "purple"
+  | "sky"
+  | "pink"
+  | "teal";
+
+export function getLatencyBadgeColor(ms: number | null): BadgeColor {
+  if (ms == null) return "gray";
+
+  if (ms < 1_000) return "green"; // Excellent (<1s)
+  if (ms < 3_000) return "yellow"; // Good (1–3s)
+  if (ms < 8_000) return "orange"; // Slow (3–8s)
+
+  return "red"; // Critical (>8s)
 }
 
 function formatTokens(tokens: number | null): string {
@@ -247,7 +270,7 @@ const columns: ColumnDef<FlatSpan>[] = [
     accessorKey: "traceStartTime",
     header: ({ column }) => <DataColumnHeader label='Start time' column={column} />,
     cell: ({ row }) => (
-      <span className='text-text-sub-600 whitespace-nowrap px-2'>
+      <span className='text-text-sub-600 px-2 whitespace-nowrap'>
         {formatTime(row.original.traceStartTime)}
       </span>
     ),
@@ -256,16 +279,26 @@ const columns: ColumnDef<FlatSpan>[] = [
     id: "latency",
     accessorKey: "traceLatencyMs",
     header: ({ column }) => <DataColumnHeader label='Latency' column={column} />,
-    cell: ({ row }) => (
-      <span className='text-text-sub-600 px-2'>{formatLatency(row.original.traceLatencyMs)}</span>
-    ),
+    cell: ({ row }) => {
+      const latency = row.original.traceLatencyMs;
+      if (latency == null) return null;
+      return (
+        <Badge.Root
+          color={getLatencyBadgeColor(latency)}
+          variant='light'
+          className='mx-2 px-1.5 lowercase'
+        >
+          {formatLatency(latency)}
+        </Badge.Root>
+      );
+    },
   },
   {
     id: "tokens",
     accessorKey: "traceTotalTokens",
     header: ({ column }) => <DataColumnHeader label='Tokens' column={column} />,
     cell: ({ row }) => (
-      <span className='text-text-sub-600 px-2'>{formatTokens(row.original.traceTotalTokens)}</span>
+      <span className='text-text-sub-600 px-3'>{formatTokens(row.original.traceTotalTokens)}</span>
     ),
   },
   {
@@ -273,7 +306,7 @@ const columns: ColumnDef<FlatSpan>[] = [
     accessorKey: "traceTotalCostUsd",
     header: ({ column }) => <DataColumnHeader label='Cost' column={column} />,
     cell: ({ row }) => (
-      <span className='text-text-sub-600 px-2'>{formatCost(row.original.traceTotalCostUsd)}</span>
+      <span className='text-text-sub-600 px-3'>{formatCost(row.original.traceTotalCostUsd)}</span>
     ),
   },
   {
@@ -405,13 +438,10 @@ export default function TracesPage() {
             <Input.Wrapper>
               <Input.Icon as={RiSearchLine} className='size-4' />
               {/* <Input.InlineAffix>€</Input.InlineAffix> */}
-              <Input.Input
-                placeholder='Search by name or status'
-                className='w-[170px] text-[13px]'
-              />
+              <Input.Input placeholder='Search by name or status' className='w-42.5 text-[13px]' />
             </Input.Wrapper>
             <Select.Root size='xxsmall' variant='compactForInput' defaultValue='all'>
-              <Select.Trigger className='w-fit px-2'>
+              <Select.Trigger className='w-fit px-2 text-[13px] [&>svg]:size-4'>
                 <Select.Value placeholder='Select view' />
               </Select.Trigger>
               <Select.Content>

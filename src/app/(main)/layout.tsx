@@ -16,7 +16,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     <SidebarProvider onMenuClick={handleMenuClick}>
       <div className='bg-bg-weak-50 relative flex h-dvh overflow-hidden lg:h-screen'>
         <MainSidebar ref={sidebarRef} />
-        <main className='w-full flex-1'>{children}</main>
+        <main className='w-full flex-1 overflow-hidden'>{children}</main>
       </div>
     </SidebarProvider>
   );

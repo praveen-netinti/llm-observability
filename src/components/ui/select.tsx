@@ -27,6 +27,8 @@ export const selectVariants = tv({
       "disabled:bg-bg-weak-50 disabled:text-text-disabled-300 data-placeholder:disabled:text-text-disabled-300 disabled:pointer-events-none disabled:shadow-none disabled:ring-transparent",
       // placeholder state
       "data-placeholder:text-text-sub-600",
+
+      "shadow-none!"
     ],
     triggerArrow: [
       // base

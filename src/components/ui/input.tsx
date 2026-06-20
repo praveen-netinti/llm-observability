@@ -31,6 +31,8 @@ export const inputVariants = tv({
       "has-[input:focus]:shadow-button-important-focus has-[input:focus]:before:ring-stroke-strong-950",
       // disabled
       "has-[input:disabled]:shadow-none has-[input:disabled]:before:ring-transparent",
+
+      "shadow-none!"
     ],
     wrapper: [
       // base

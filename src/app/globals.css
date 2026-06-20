@@ -858,3 +858,15 @@ body {
 [data-nextjs-dev-overlay] {
   display: none !important;
 }
+
+@utility no-scrollbar {
+  /* IE and Edge */
+  -ms-overflow-style: none;
+  /* Firefox */
+  scrollbar-width: none;
+
+  /* Chrome, Safari and Opera */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

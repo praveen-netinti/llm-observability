@@ -24,7 +24,7 @@ export const tooltipVariants = tv({
         arrow: "rounded-bl-sm",
       },
       small: {
-        content: "text-paragraph-sm rounded-md px-2.5 py-1",
+        content: "rounded-md px-2.5 py-1 text-xs",
         arrow: "rounded-bl-[3px]",
       },
       medium: {
@@ -38,8 +38,11 @@ export const tooltipVariants = tv({
         arrow: "border-stroke-strong-950 bg-bg-strong-950",
       },
       light: {
-        content: "bg-bg-white-0 text-text-strong-950 ring-stroke-soft-200 ring-1",
-        arrow: "border-stroke-soft-200 bg-bg-white-0",
+        content:
+          "bg-bg-white-0 dark:bg-bg-soft-200 text-text-strong-950 ring-stroke-soft-200 ring-1",
+        arrow: "border-stroke-soft-200 bg-bg-white-0 dark:bg-bg-soft-200",
+        // content: "bg-bg-white-0 text-text-strong-950 ring-stroke-soft-200 ring-1",
+        // arrow: "border-stroke-soft-200 bg-bg-white-0",
       },
     },
   },
@@ -75,7 +78,7 @@ export const tooltipVariants = tv({
   ],
   defaultVariants: {
     size: "small",
-    variant: "dark",
+    variant: "light",
   },
 });
 

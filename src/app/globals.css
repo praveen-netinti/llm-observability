@@ -4,8 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans:
-    var(--font-open-runde), Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-sans: var(--font-open-runde), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 
   /* Raw Colors */
@@ -553,6 +552,13 @@
     0 1px 1px -0.5px rgba(23, 23, 23, 0.04), 0 0 0 1px rgba(23, 23, 23, 0.08),
     0 -1px 1px -0.5px rgba(23, 23, 23, 0.04) inset;
 
+  --text-2xs: 0.688rem; /* 11px */
+  --tracking-spacing-tiny: 0.014em; /* 0.22px */
+  --tracking-spacing-tiny-1: -0.017em; /* -0.27px */
+  --tracking-spacing-tiny-2: -0.005em; /* -0.084px */
+  --tracking-spacing-tiny-3: -0.009em; /* -0.15px */
+  --tracking-spacing-tiny-4: -0.011; /* -0.176px */
+
   /* Border Radius System  */
 
   --radius-10: 0.625rem;
@@ -804,9 +810,9 @@ body {
   margin: 0;
   padding: 0;
   font-family: var(--font-sans);
-  font-size: 1rem;
+  /* font-size: 1rem;
   font-weight: 500;
-  line-height: 1.5rem;
+  line-height: 1.5rem; */
   background: var(--color-bg-white-0);
   color: var(--color-text-strong-950);
 }

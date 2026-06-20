@@ -48,6 +48,7 @@ import {
 import * as Select from "@/components/ui/select";
 import * as StatusBadge from "@/components/ui/status-badge";
 import * as Table from "@/components/ui/table";
+import * as Tooltip from "@/components/ui/tooltip";
 
 function IconUserBox(props: SVGProps<SVGSVGElement>) {
   return (
@@ -548,63 +549,94 @@ export default function TracesLayout() {
               minSize='40%'
               className='animate-slide-in-right h-full'
             >
+              {/* Side Panel Actions */}
               <div className='border-faded-lighter dark:border-stroke-soft-200 flex h-11 w-full items-center gap-0.5 border-b px-2'>
                 <div className='flex items-center gap-1'>
-                  <Button.Root
-                    variant='neutral'
-                    mode='ghost'
-                    size='xxsmall'
-                    onClick={() => router.push("/traces")}
-                    className='size-7 cursor-pointer rounded-lg p-0'
-                  >
-                    <Button.Icon as={RiArrowRightDoubleLine} className='text-text-soft-400' />
-                  </Button.Root>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger asChild>
+                      <Button.Root
+                        variant='neutral'
+                        mode='ghost'
+                        size='xxsmall'
+                        onClick={() => router.push("/traces")}
+                        className='size-7 cursor-pointer rounded-lg p-0'
+                      >
+                        <Button.Icon as={RiArrowRightDoubleLine} className='text-text-soft-400' />
+                      </Button.Root>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>Close</Tooltip.Content>
+                  </Tooltip.Root>
 
-                  <Button.Root
-                    variant='neutral'
-                    mode='ghost'
-                    size='xxsmall'
-                    className='size-7 cursor-pointer rounded-lg p-0'
-                  >
-                    <Button.Icon as={RiFullscreenLine} className='text-text-soft-400' />
-                  </Button.Root>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger asChild>
+                      <Button.Root
+                        variant='neutral'
+                        mode='ghost'
+                        size='xxsmall'
+                        className='size-7 cursor-pointer rounded-lg p-0'
+                      >
+                        <Button.Icon as={RiFullscreenLine} className='text-text-soft-400' />
+                      </Button.Root>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>Open in full page</Tooltip.Content>
+                  </Tooltip.Root>
                 </div>
 
-                <div className='bg-bg-soft-200 h-3.5 w-px' style={{ marginInline: "6px" }}></div>
+                <div className='bg-bg-soft-200 h-3.5 w-px' style={{ marginInline: "8px" }}></div>
 
                 <div className='border-stroke-soft-200 bg-bg-weak-25 text-2xs text-text-sub-600 h-6 rounded-md border px-2 font-medium'>
                   5 / 7
                 </div>
 
-                <div className='bg-bg-soft-200 h-3.5 w-px' style={{ marginInline: "6px" }}></div>
+                <div className='bg-bg-soft-200 h-3.5 w-px' style={{ marginInline: "8px" }}></div>
 
                 <div className='flex items-center'>
-                  <Button.Root
-                    variant='neutral'
-                    mode='ghost'
-                    size='xxsmall'
-                    className='size-7 cursor-pointer rounded-lg p-0'
-                  >
-                    <Button.Icon as={RiArrowDownSLine} className='text-text-soft-400' />
-                  </Button.Root>
-                  <Button.Root
-                    variant='neutral'
-                    mode='ghost'
-                    size='xxsmall'
-                    className='size-7 cursor-pointer rounded-lg p-0'
-                  >
-                    <Button.Icon as={RiArrowUpSLine} className='text-text-soft-400' />
-                  </Button.Root>
+                  <Tooltip.Root>
+                    <Tooltip.Trigger asChild>
+                      <Button.Root
+                        variant='neutral'
+                        mode='ghost'
+                        size='xxsmall'
+                        className='size-7 cursor-pointer rounded-lg p-0'
+                      >
+                        <Button.Icon as={RiArrowDownSLine} className='text-text-soft-400' />
+                      </Button.Root>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>Previous Page</Tooltip.Content>
+                  </Tooltip.Root>
+
+                  <Tooltip.Root>
+                    <Tooltip.Trigger asChild>
+                      <Button.Root
+                        variant='neutral'
+                        mode='ghost'
+                        size='xxsmall'
+                        className='size-7 cursor-pointer rounded-lg p-0'
+                      >
+                        <Button.Icon as={RiArrowUpSLine} className='text-text-soft-400' />
+                      </Button.Root>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>Next page</Tooltip.Content>
+                  </Tooltip.Root>
                 </div>
 
-                <Button.Root
-                  variant='neutral'
-                  mode='ghost'
-                  size='xxsmall'
-                  className='ml-auto size-7 cursor-pointer rounded-lg p-0'
-                >
-                  <Button.Icon as={RiMoreFill} className='text-text-soft-400' />
-                </Button.Root>
+                <div className='bg-bg-soft-200 h-3.5 w-px' style={{ marginInline: "8px" }}></div>
+
+                <div className='text-text-sub-600 text-[13px]'>{traceId}</div>
+
+                <Tooltip.Root>
+                  <Tooltip.Trigger asChild>
+                    <Button.Root
+                      variant='neutral'
+                      mode='ghost'
+                      size='xxsmall'
+                      className='ml-auto size-7 cursor-pointer rounded-lg p-0'
+                    >
+                      <Button.Icon as={RiMoreFill} className='text-text-soft-400' />
+                    </Button.Root>
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>More...</Tooltip.Content>
+                </Tooltip.Root>
               </div>
             </ResizablePanel>
           </>

@@ -32,7 +32,7 @@ export const selectVariants = tv({
     ],
     triggerArrow: [
       // base
-      "ml-auto size-5 shrink-0",
+      "ml-auto size-4 shrink-0",
       "transition duration-200 ease-out",
       // placeholder state
       "group-data-placeholder/trigger:text-text-soft-400",

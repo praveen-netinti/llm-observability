@@ -168,11 +168,27 @@ export default function TracesLayout() {
   const router = useRouter();
 
   const [sorting, setSorting] = React.useState<SortingState>([{ id: "startTime", desc: true }]);
+  const [search, setSearch] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState<string>("all");
 
   // Extract traceId from pathname: /traces/[traceId]
   const traceId = pathname.match(/\/traces\/([^/]+)/)?.[1] ?? null;
   const spans = traceId ? flatSpans.filter((s) => s.traceId === traceId) : [];
   const showPanel = !!traceId && spans.length > 0;
+
+  const filteredRows = useMemo(() => {
+    let rows = traceRows;
+    if (search) {
+      const q = search.toLowerCase();
+      rows = rows.filter(
+        (r) => r.traceName.toLowerCase().includes(q) || r.name.toLowerCase().includes(q),
+      );
+    }
+    if (statusFilter !== "all") {
+      rows = rows.filter((r) => r.traceStatus === statusFilter);
+    }
+    return rows;
+  }, [search, statusFilter]);
 
   const columns: ColumnDef<FlatSpan>[] = useMemo(
     () => [
@@ -367,7 +383,7 @@ export default function TracesLayout() {
   );
 
   const table = useReactTable({
-    data: traceRows,
+    data: filteredRows,
     columns,
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),
@@ -469,43 +485,37 @@ export default function TracesLayout() {
               <Input.Root size='xsmall' className='h-7 w-fit'>
                 <Input.Wrapper>
                   <Input.Icon as={RiSearchLine} className='size-4' />
-                  {/* <Input.InlineAffix>€</Input.InlineAffix> */}
                   <Input.Input
-                    placeholder='Search by name or status'
+                    placeholder='Search by name'
                     className='w-42.5 text-[13px]'
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
                   />
                 </Input.Wrapper>
-                <Select.Root size='xxsmall' variant='compactForInput' defaultValue='all'>
-                  <Select.Trigger className='w-fit px-2 text-[13px] [&>svg]:size-4'>
-                    <Select.Value placeholder='Select view' />
-                  </Select.Trigger>
-                  <Select.Content>
-                    {[
-                      {
-                        value: "all",
-                        label: "All",
-                      },
-                      {
-                        value: "name",
-                        label: "Name",
-                      },
-                      {
-                        value: "status",
-                        label: "Status",
-                      },
-                    ].map((item) => (
-                      <Select.Item key={item.value} value={item.value}>
-                        {item.label}
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
               </Input.Root>
 
-              <div className='ml-auto flex items-center'>
-                <Button.Root variant='neutral' mode='stroke' size='xxsmall' className='size-7'>
-                  <Button.Icon as={RiFilter3Line} />
-                </Button.Root>
+              <div className='ml-auto flex items-center gap-1.5'>
+                <Select.Root size='xxsmall' value={statusFilter} onValueChange={setStatusFilter}>
+                  <Select.Trigger className='w-fit gap-1'>
+                    <RiFilter3Line className='size-3.5' />
+                    <Select.Value placeholder='Status' />
+                  </Select.Trigger>
+                  <Select.Content align='end' className='w-35'>
+                    <Select.Item value='all'>All Status</Select.Item>
+                    <Select.Item value='success'>
+                      {/* <RiCheckboxCircleFill className='text-success-base inline size-4' /> */}
+                      Success
+                    </Select.Item>
+                    <Select.Item value='error'>
+                      {/* <RiCloseCircleFill className='text-error-base inline size-4' /> */}
+                      Error
+                    </Select.Item>
+                    <Select.Item value='running'>
+                      {/* <RiLoader4Line className='text-warning-base inline size-4' /> */}
+                      Running
+                    </Select.Item>
+                  </Select.Content>
+                </Select.Root>
               </div>
             </div>
 

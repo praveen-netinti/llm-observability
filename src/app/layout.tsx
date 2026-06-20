@@ -9,6 +9,7 @@ import { ConsoleBanner } from "@/components/console-banner";
 
 import "./globals.css";
 
+import { SplashScreen } from "@/components/splash-screen";
 import { NotificationProvider } from "@/components/ui/notification-provider";
 
 export const metadata: Metadata = {
@@ -36,7 +37,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Tooltip.Provider delayDuration={600}>{children}</Tooltip.Provider>
+          <Tooltip.Provider delayDuration={600}>
+            <SplashScreen>{children}</SplashScreen>
+          </Tooltip.Provider>
         </ThemeProvider>
       </body>
     </html>

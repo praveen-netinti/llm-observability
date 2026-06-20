@@ -297,6 +297,10 @@
   --color-stable-light: var(--color-teal-200);
   --color-stable-lighter: var(--color-teal-50);
 
+  /* Selection */
+  --color-selection: oklch(0.145 0 0);
+  --color-selection-foreground: oklch(1 0 0);
+
   /* Typography System  */
 
   --text-title-h1: 3.5rem;
@@ -649,10 +653,6 @@
   --color-stable-light: var(--color-teal-alpha-24);
   --color-stable-lighter: var(--color-teal-alpha-16);
 
-  --color-primary-base: var(--color-blue-400);
-  --color-primary-light: var(--color-blue-alpha-16);
-  --color-primary-lighter: var(--color-blue-alpha-10);
-
   --color-overlay-gray: #3333338f;
   --color-overlay-slate: #2b303b8f;
   --color-overlay: var(--color-overlay-gray);
@@ -664,6 +664,10 @@
   --color-social-tidal: #fff;
   --color-social-amazon: #fff;
   --color-social-zendesk: #fff;
+
+  /* --- Selection --- */
+  --color-selection: oklch(0.922 0 0);
+  --color-selection-foreground: oklch(0.205 0 0);
 
   --shadow-complex-12: 0 80px 80px -40px rgba(23, 23, 23, 0), 0 48px 48px -24px rgba(23, 23, 23, 0);
 
@@ -805,14 +809,52 @@
   transform-origin: center;
 }
 
+@layer base {
+  ::selection {
+    @apply bg-selection text-selection-foreground;
+  }
+
+  [data-tabular-nums] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
 /* Body Styles */
 body {
   margin: 0;
   padding: 0;
   font-family: var(--font-sans);
-  /* font-size: 1rem;
+  font-size: 1rem;
   font-weight: 500;
-  line-height: 1.5rem; */
+  line-height: 1.5rem;
   background: var(--color-bg-white-0);
   color: var(--color-text-strong-950);
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+[data-nextjs-dev-overlay] {
+  display: none !important;
 }

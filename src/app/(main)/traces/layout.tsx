@@ -4,15 +4,20 @@ import React, { SVGProps } from "react";
 import { useSidebar } from "@/contexts/sidebar-context";
 import {
   RiArrowDownLongLine,
+  RiArrowDownSLine,
+  RiArrowRightDoubleLine,
   RiArrowRightSLine,
   RiArrowUpDownLine,
   RiArrowUpLongLine,
+  RiArrowUpSLine,
   RiCheckboxCircleFill,
   RiCloseCircleFill,
   RiFilter3Line,
+  RiFullscreenLine,
   RiHourglassLine,
   RiLayoutLeft2Line,
   RiLoader4Line,
+  RiMoreFill,
   RiSearchLine,
 } from "@remixicon/react";
 import {
@@ -34,7 +39,7 @@ import * as Breadcrumb from "@/components/ui/breadcrumb";
 import * as Button from "@/components/ui/button";
 import * as Checkbox from "@/components/ui/checkbox";
 import * as Input from "@/components/ui/input";
-import { ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import {
   SegmentedControl,
   SegmentedControlList,
@@ -205,14 +210,7 @@ const columns: ColumnDef<FlatSpan>[] = [
   {
     id: "status",
     accessorKey: "traceStatus",
-    header: ({ column }) => (
-      <div className='flex items-center gap-0.5'>
-        {/* Status */}
-        {/* <button type='button' onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-          {getSortingIcon(column.getIsSorted())}
-        </button> */}
-      </div>
-    ),
+    header: () => <></>,
     cell: ({ row }) => {
       const cfg = statusConfig[row.original.traceStatus];
       return (
@@ -337,17 +335,17 @@ const columns: ColumnDef<FlatSpan>[] = [
   },
 ];
 
-export default function TracesLayout({
-  panel,
-}: {
-  children: React.ReactNode;
-  panel: React.ReactNode;
-}) {
+export default function TracesLayout() {
   const { onMenuClick } = useSidebar();
+  const pathname = usePathname();
+  const router = useRouter();
 
   const [sorting, setSorting] = React.useState<SortingState>([{ id: "startTime", desc: true }]);
 
-  const router = useRouter();
+  // Extract traceId from pathname: /traces/[traceId]
+  const traceId = pathname.match(/\/traces\/([^/]+)/)?.[1] ?? null;
+  const spans = traceId ? flatSpans.filter((s) => s.traceId === traceId) : [];
+  const showPanel = !!traceId && spans.length > 0;
 
   const table = useReactTable({
     data: traceRows,
@@ -485,12 +483,7 @@ export default function TracesLayout({
               </Input.Root>
 
               <div className='ml-auto flex items-center'>
-                <Button.Root
-                  variant='neutral'
-                  mode='stroke'
-                  size='xxsmall'
-                  className='size-7 rounded-full'
-                >
+                <Button.Root variant='neutral' mode='stroke' size='xxsmall' className='size-7'>
                   <Button.Icon as={RiFilter3Line} />
                 </Button.Root>
               </div>
@@ -524,10 +517,16 @@ export default function TracesLayout({
                         data-selected={isSelected || undefined}
                         data-connected-top={(isSelected && prevSelected) || undefined}
                         data-connected-bottom={(isSelected && nextSelected) || undefined}
-                        onClick={() => router.push(`/traces/${row.original.traceId}`)}
                       >
                         {row.getVisibleCells().map((cell) => (
-                          <Table.Cell key={cell.id} className='text-[13px]'>
+                          <Table.Cell
+                            key={cell.id}
+                            className='text-[13px]'
+                            onClick={() => {
+                              if (cell.column.id === "name")
+                                router.push(`/traces/${row.original.traceId}`);
+                            }}
+                          >
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </Table.Cell>
                         ))}
@@ -540,7 +539,76 @@ export default function TracesLayout({
           </div>
         </ResizablePanel>
 
-        {panel}
+        {showPanel && (
+          <>
+            <ResizableHandle withHandle />
+            <ResizablePanel
+              defaultSize='50%'
+              maxSize='80%'
+              minSize='40%'
+              className='animate-slide-in-right h-full'
+            >
+              <div className='border-faded-lighter dark:border-stroke-soft-200 flex h-11 w-full items-center gap-0.5 border-b px-2'>
+                <div className='flex items-center gap-1'>
+                  <Button.Root
+                    variant='neutral'
+                    mode='ghost'
+                    size='xxsmall'
+                    onClick={() => router.push("/traces")}
+                    className='size-7 cursor-pointer rounded-lg p-0'
+                  >
+                    <Button.Icon as={RiArrowRightDoubleLine} className='text-text-soft-400' />
+                  </Button.Root>
+
+                  <Button.Root
+                    variant='neutral'
+                    mode='ghost'
+                    size='xxsmall'
+                    className='size-7 cursor-pointer rounded-lg p-0'
+                  >
+                    <Button.Icon as={RiFullscreenLine} className='text-text-soft-400' />
+                  </Button.Root>
+                </div>
+
+                <div className='bg-bg-soft-200 h-3.5 w-px' style={{ marginInline: "6px" }}></div>
+
+                <div className='border-stroke-soft-200 bg-bg-weak-25 text-2xs text-text-sub-600 h-6 rounded-md border px-2 font-medium'>
+                  5 / 7
+                </div>
+
+                <div className='bg-bg-soft-200 h-3.5 w-px' style={{ marginInline: "6px" }}></div>
+
+                <div className='flex items-center'>
+                  <Button.Root
+                    variant='neutral'
+                    mode='ghost'
+                    size='xxsmall'
+                    className='size-7 cursor-pointer rounded-lg p-0'
+                  >
+                    <Button.Icon as={RiArrowDownSLine} className='text-text-soft-400' />
+                  </Button.Root>
+                  <Button.Root
+                    variant='neutral'
+                    mode='ghost'
+                    size='xxsmall'
+                    className='size-7 cursor-pointer rounded-lg p-0'
+                  >
+                    <Button.Icon as={RiArrowUpSLine} className='text-text-soft-400' />
+                  </Button.Root>
+                </div>
+
+                <Button.Root
+                  variant='neutral'
+                  mode='ghost'
+                  size='xxsmall'
+                  className='ml-auto size-7 cursor-pointer rounded-lg p-0'
+                >
+                  <Button.Icon as={RiMoreFill} className='text-text-soft-400' />
+                </Button.Root>
+              </div>
+            </ResizablePanel>
+          </>
+        )}
       </ResizablePanelGroup>
     </div>
   );

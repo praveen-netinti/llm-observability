@@ -248,7 +248,7 @@ export default function TracesLayout() {
 
             <button
               type='button'
-              className='border-stroke-soft-200 bg-bg-white-0 text-2xs text-text-sub-600 absolute inset-y-0 right-4 flex h-6 w-fit cursor-pointer items-center gap-1 rounded-md border px-1.5 uppercase opacity-0 group-hover/cell:opacity-100'
+              className='border-stroke-soft-200 bg-bg-white-0 text-2xs text-text-sub-600 absolute inset-y-0 right-0 flex h-6 w-fit cursor-pointer items-center gap-1 rounded-md border px-1.5 uppercase opacity-0 group-hover/cell:opacity-100'
               onClick={() => {
                 router.push(`/traces/${row.original.traceId}`);
               }}
@@ -391,6 +391,7 @@ export default function TracesLayout() {
                 size='xxsmall'
                 onClick={onMenuClick}
                 className='size-7 cursor-pointer rounded-lg p-0 lg:hidden'
+                autoFocus={false}
               >
                 <Button.Icon as={RiLayoutLeft2Line} className='text-text-soft-400' />
               </Button.Root>
@@ -538,7 +539,13 @@ export default function TracesLayout() {
                         data-connected-bottom={(isSelected && nextSelected) || undefined}
                       >
                         {row.getVisibleCells().map((cell) => (
-                          <Table.Cell key={cell.id} className='group/cell text-[13px]'>
+                          <Table.Cell
+                            key={cell.id}
+                            className={cn(
+                              "group/cell text-[13px]",
+                              traceId === row.original.traceId && "bg-bg-weak-50",
+                            )}
+                          >
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </Table.Cell>
                         ))}
@@ -557,12 +564,12 @@ export default function TracesLayout() {
             <ResizablePanel
               defaultSize='50%'
               maxSize='80%'
-              minSize='40%'
+              minSize='60%'
               className='animate-slide-in-right h-full'
             >
               <TraceDetailPanel.Root traceId={traceId}>
                 <TraceDetailPanel.Header />
-                <TraceDetailPanel.Waterfall />
+                <TraceDetailPanel.Body />
               </TraceDetailPanel.Root>
             </ResizablePanel>
           </>

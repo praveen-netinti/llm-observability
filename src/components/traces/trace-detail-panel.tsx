@@ -1,18 +1,21 @@
 "use client";
 
 import React, { SVGProps, useState } from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
   RiArrowDownSLine,
   RiArrowRightDoubleLine,
+  RiArrowRightSLine,
   RiArrowUpSLine,
+  RiBarChartHorizontalLine,
   RiCheckboxCircleFill,
   RiCloseCircleFill,
   RiFullscreenLine,
   RiLink,
+  RiListUnordered,
   RiLoader4Line,
   RiMoreFill,
 } from "@remixicon/react";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 
@@ -22,6 +25,13 @@ import { cn } from "@/utils";
 import * as Badge from "@/components/ui/badge";
 import * as Button from "@/components/ui/button";
 import * as Popover from "@/components/ui/popover";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import {
+  SegmentedControl,
+  SegmentedControlList,
+  SegmentedControlPanel,
+  SegmentedControlTab,
+} from "@/components/ui/segmented-control";
 import * as Tooltip from "@/components/ui/tooltip";
 
 // --- Types ---
@@ -49,7 +59,13 @@ function Root({ traceId, children }: { traceId: string; children: React.ReactNod
 
   return (
     <PanelContext.Provider value={{ traceId, spans, close }}>
-      <DialogPrimitive.Root modal={false} open onOpenChange={(open) => { if (!open) close(); }}>
+      <DialogPrimitive.Root
+        modal={false}
+        open
+        onOpenChange={(open) => {
+          if (!open) close();
+        }}
+      >
         <DialogPrimitive.Content
           aria-describedby={undefined}
           onInteractOutside={(e) => e.preventDefault()}
@@ -209,7 +225,11 @@ function TraceIdPopover({ traceId }: { traceId: string }) {
       >
         <span className='text-text-sub-600 text-[11px] font-medium uppercase'>Trace ID</span>
         <code className='text-text-strong-950 font-mono text-[12px]'>{shortId}</code>
-        <button type='button' onClick={copy} className='inline-flex cursor-pointer items-center ml-2'>
+        <button
+          type='button'
+          onClick={copy}
+          className='ml-2 inline-flex cursor-pointer items-center'
+        >
           <AnimatePresence mode='popLayout' initial={false}>
             <motion.span
               key={copied ? "check" : "copy"}
@@ -256,6 +276,7 @@ function CopyIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+// --- Constants ---
 
 const statusIcon = {
   success: RiCheckboxCircleFill,
@@ -269,6 +290,12 @@ const statusColor = {
   running: "text-warning-base",
 } as const;
 
+const statusDotColor = {
+  success: "bg-success-base",
+  error: "bg-error-base",
+  running: "bg-warning-base animate-pulse",
+} as const;
+
 const typeColor: Record<string, string> = {
   llm: "bg-purple-500",
   tool: "bg-sky-500",
@@ -276,17 +303,254 @@ const typeColor: Record<string, string> = {
   retriever: "bg-teal-500",
 };
 
-function Waterfall() {
-  const { spans } = usePanelContext();
+// --- Body (Summary + View Toggle + Split Layout) ---
 
-  // Compute time range for positioning bars
-  const startTimes = spans.map((s) => new Date(s.startTime).getTime());
-  const endTimes = spans.map((s) => (s.endTime ? new Date(s.endTime).getTime() : Date.now()));
-  const traceStart = Math.min(...startTimes);
-  const traceEnd = Math.max(...endTimes);
+type ViewMode = "tree" | "waterfall";
+
+function Body() {
+  const { spans } = usePanelContext();
+  const [viewMode, setViewMode] = useState<ViewMode>("tree");
+  const [selectedSpanId, setSelectedSpanId] = useState<string | null>(spans[0]?.id ?? null);
+  const selectedSpan = spans.find((s) => s.id === selectedSpanId) ?? null;
+  const rootSpan = spans.find((s) => s.parentId === null);
+
+  return (
+    <>
+      {/* Summary bar */}
+      <div className='border-faded-lighter dark:border-stroke-soft-200 flex items-center gap-4 border-b px-3 py-1.5 text-[12px]'>
+        <span className='text-text-sub-600'>
+          Duration:{" "}
+          <span className='text-text-strong-950 font-mono'>
+            {formatDuration(rootSpan?.latencyMs ?? null)}
+          </span>
+        </span>
+        <span className='text-text-sub-600'>
+          Tokens:{" "}
+          <span className='text-text-strong-950 font-mono'>
+            {formatTokens(rootSpan?.traceTotalTokens ?? null)}
+          </span>
+        </span>
+        <span className='text-text-sub-600'>
+          Cost:{" "}
+          <span className='text-text-strong-950 font-mono'>
+            {formatCost(rootSpan?.traceTotalCostUsd ?? null)}
+          </span>
+        </span>
+        <div className='ml-auto'>
+          <SegmentedControl value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)}>
+            <SegmentedControlList
+              className='h-7'
+              style={
+                {
+                  "--active-tab-height": "28px !important",
+                } as React.CSSProperties
+              }
+            >
+              <SegmentedControlTab value='tree' className='px-2 text-[11px]!'>
+                <RiListUnordered className='size-3' />
+                Tree
+              </SegmentedControlTab>
+              <SegmentedControlTab value='waterfall' className='px-2 text-[11px]!'>
+                <RiBarChartHorizontalLine className='size-3' />
+                Waterfall
+              </SegmentedControlTab>
+            </SegmentedControlList>
+          </SegmentedControl>
+        </div>
+      </div>
+
+      {/* Split: Span list + Span detail */}
+      <ResizablePanelGroup orientation='horizontal' className='min-h-0 flex-1'>
+        <ResizablePanel defaultSize='50%' minSize='25%'>
+          <div className='no-scrollbar h-full overflow-auto'>
+            {viewMode === "tree" ? (
+              <SpanTree spans={spans} selectedId={selectedSpanId} onSelect={setSelectedSpanId} />
+            ) : (
+              <WaterfallView
+                spans={spans}
+                selectedId={selectedSpanId}
+                onSelect={setSelectedSpanId}
+              />
+            )}
+          </div>
+        </ResizablePanel>
+        <ResizableHandle />
+        <ResizablePanel defaultSize='50%' minSize='40%'>
+          <div className='no-scrollbar h-full overflow-auto'>
+            {selectedSpan ? <SpanDetail span={selectedSpan} /> : <EmptyState />}
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </>
+  );
+}
+
+// --- Helpers ---
+
+function formatDuration(ms: number | null): string {
+  if (ms == null) return "—";
+  if (ms < 1000) return `${ms}ms`;
+  return `${(ms / 1000).toFixed(2)}s`;
+}
+
+function formatTokens(tokens: number | null): string {
+  if (tokens == null || tokens === 0) return "—";
+  if (tokens >= 1000) return `${(tokens / 1000).toFixed(1)}k`;
+  return String(tokens);
+}
+
+function formatCost(cost: number | null): string {
+  if (cost == null || cost === 0) return "—";
+  if (cost < 0.01) return `$${cost.toFixed(4)}`;
+  return `$${cost.toFixed(2)}`;
+}
+
+function EmptyState() {
+  return (
+    <div className='text-text-sub-600 flex h-full items-center justify-center text-sm'>
+      Select a span
+    </div>
+  );
+}
+
+// --- Span Tree View ---
+
+function SpanTree({
+  spans,
+  selectedId,
+  onSelect,
+}: {
+  spans: FlatSpan[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}) {
+  const tree = React.useMemo(() => buildTree(spans), [spans]);
+
+  return (
+    <div className='p-2'>
+      {tree.map((node) => (
+        <SpanTreeItem
+          key={node.id}
+          node={node}
+          depth={0}
+          selectedId={selectedId}
+          onSelect={onSelect}
+        />
+      ))}
+    </div>
+  );
+}
+
+type TreeNode = FlatSpan & { children: TreeNode[] };
+
+function buildTree(spans: FlatSpan[]): TreeNode[] {
+  const map = new Map<string, TreeNode>();
+  for (const s of spans) map.set(s.id, { ...s, children: [] });
+  const roots: TreeNode[] = [];
+  for (const s of spans) {
+    const node = map.get(s.id)!;
+    if (s.parentId && map.has(s.parentId)) {
+      map.get(s.parentId)!.children.push(node);
+    } else {
+      roots.push(node);
+    }
+  }
+  return roots;
+}
+
+function SpanTreeItem({
+  node,
+  depth,
+  selectedId,
+  onSelect,
+}: {
+  node: TreeNode;
+  depth: number;
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(true);
+  const hasChildren = node.children.length > 0;
+  const Icon = statusIcon[node.status];
+
+  return (
+    <div>
+      <div
+        className={cn(
+          "flex cursor-pointer items-center gap-1 rounded-md px-1.5 py-1 text-[12px] transition-colors",
+          selectedId === node.id ? "bg-bg-weak-50" : "hover:bg-bg-weak-50/50",
+        )}
+        style={{ paddingLeft: `${depth * 12 + 4}px` }}
+        onClick={() => onSelect(node.id)}
+      >
+        {hasChildren ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpen(!open);
+            }}
+            className='flex size-4 items-center justify-center'
+          >
+            {open ? (
+              <RiArrowDownSLine className='size-3' />
+            ) : (
+              <RiArrowRightSLine className='size-3' />
+            )}
+          </button>
+        ) : (
+          <span className='size-4' />
+        )}
+        <Icon
+          className={cn(
+            "size-3 shrink-0",
+            statusColor[node.status],
+            node.status === "running" && "animate-spin",
+          )}
+        />
+        <span className='text-text-strong-950 truncate'>{node.name}</span>
+        <span className='text-text-sub-600 ml-auto shrink-0 font-mono text-[11px] tabular-nums'>
+          {formatDuration(node.latencyMs)}
+        </span>
+      </div>
+      {open &&
+        hasChildren &&
+        node.children.map((child) => (
+          <SpanTreeItem
+            key={child.id}
+            node={child}
+            depth={depth + 1}
+            selectedId={selectedId}
+            onSelect={onSelect}
+          />
+        ))}
+    </div>
+  );
+}
+
+// --- Waterfall View ---
+
+function WaterfallView({
+  spans,
+  selectedId,
+  onSelect,
+}: {
+  spans: FlatSpan[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}) {
+  const traceStart = Math.min(...spans.map((s) => new Date(s.startTime).getTime()));
+  const knownEnds = spans.filter((s) => s.endTime).map((s) => new Date(s.endTime!).getTime());
+  const latestKnownEnd = knownEnds.length > 0 ? Math.max(...knownEnds) : traceStart + 1000;
+  const traceEnd = Math.max(
+    latestKnownEnd,
+    ...spans.map((s) =>
+      s.endTime
+        ? new Date(s.endTime).getTime()
+        : new Date(s.startTime).getTime() + (s.latencyMs ?? 0),
+    ),
+  );
   const totalDuration = traceEnd - traceStart || 1;
 
-  // Sort spans by start time, respecting tree structure (DFS order)
   const sortedSpans = React.useMemo(() => {
     const childMap = new Map<string | null, FlatSpan[]>();
     for (const span of spans) {
@@ -308,66 +572,194 @@ function Waterfall() {
   }, [spans]);
 
   return (
-    <div className='no-scrollbar flex-1 overflow-auto'>
-      <div className='min-w-0 p-2'>
-        {sortedSpans.map((span) => {
-          const spanStart = new Date(span.startTime).getTime();
-          const spanEnd = span.endTime ? new Date(span.endTime).getTime() : Date.now();
-          const leftPct = ((spanStart - traceStart) / totalDuration) * 100;
-          const widthPct = Math.max(((spanEnd - spanStart) / totalDuration) * 100, 0.5);
-          const Icon = statusIcon[span.status];
+    <div className='p-2'>
+      {/* Time ruler */}
+      <div
+        className='text-text-sub-600 mb-1 flex items-center px-2'
+        style={{ paddingLeft: "120px" }}
+      >
+        <div className='flex flex-1 justify-between font-mono text-[10px] tabular-nums'>
+          <span>0ms</span>
+          <span>{formatDuration(totalDuration / 4)}</span>
+          <span>{formatDuration(totalDuration / 2)}</span>
+          <span>{formatDuration((totalDuration * 3) / 4)}</span>
+          <span>{formatDuration(totalDuration)}</span>
+        </div>
+        <span className='w-12 shrink-0' />
+      </div>
 
-          return (
-            <div
-              key={span.id}
-              className='hover:bg-bg-weak-50 group flex items-center gap-2 rounded-md px-2 py-1.5'
-              style={{ paddingLeft: `${span.depth * 16 + 8}px` }}
+      {sortedSpans.map((span) => {
+        const spanStart = new Date(span.startTime).getTime();
+        const spanEnd = span.endTime
+          ? new Date(span.endTime).getTime()
+          : new Date(span.startTime).getTime() + (span.latencyMs ?? totalDuration * 0.1);
+        const leftPct = ((spanStart - traceStart) / totalDuration) * 100;
+        const widthPct = Math.max(((spanEnd - spanStart) / totalDuration) * 100, 0.5);
+
+        return (
+          <div
+            key={span.id}
+            className={cn(
+              "flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 transition-colors",
+              selectedId === span.id ? "bg-bg-weak-50" : "hover:bg-bg-weak-50/50",
+            )}
+            style={{ paddingLeft: `${span.depth * 12 + 8}px` }}
+            onClick={() => onSelect(span.id)}
+          >
+            <span className={cn("size-1.5 shrink-0 rounded-full", statusDotColor[span.status])} />
+            <span
+              className='text-text-strong-950 min-w-0 shrink-0 truncate text-[11px]'
+              style={{ maxWidth: "100px" }}
             >
-              {/* Span info */}
-              <Icon
+              {span.name}
+            </span>
+            <div className='relative ml-auto h-4 min-w-[80px] flex-1'>
+              <div className='bg-bg-soft-200 absolute inset-0 rounded-sm' />
+              <div
                 className={cn(
-                  "size-3.5 shrink-0",
-                  statusColor[span.status],
-                  span.status === "running" && "animate-spin",
+                  "absolute top-0.5 bottom-0.5 rounded-sm opacity-80",
+                  typeColor[span.type] ?? "bg-gray-400",
                 )}
+                style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
               />
-              <span
-                className='text-text-strong-950 min-w-0 shrink-0 truncate text-[12px] font-medium'
-                style={{ maxWidth: "140px" }}
-              >
-                {span.name}
-              </span>
-              <Badge.Root
-                color={span.type === "llm" ? "purple" : span.type === "tool" ? "sky" : "blue"}
-                variant='light'
-                className='shrink-0 px-1 text-[10px] leading-4'
-              >
-                {span.type}
-              </Badge.Root>
-
-              {/* Waterfall bar */}
-              <div className='relative ml-auto h-4 min-w-[100px] flex-1'>
-                <div className='bg-bg-soft-200 absolute inset-0 rounded-sm' />
-                <div
-                  className={cn(
-                    "absolute top-0.5 bottom-0.5 rounded-sm opacity-80",
-                    typeColor[span.type] ?? "bg-gray-400",
-                  )}
-                  style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
-                />
-              </div>
-
-              {/* Latency */}
-              <span className='text-text-sub-600 w-14 shrink-0 text-right text-[11px]'>
-                {span.latencyMs != null
-                  ? span.latencyMs < 1000
-                    ? `${span.latencyMs}ms`
-                    : `${(span.latencyMs / 1000).toFixed(2)}s`
-                  : "—"}
-              </span>
             </div>
-          );
-        })}
+            <span className='text-text-sub-600 w-12 shrink-0 text-right font-mono text-[10px] tabular-nums'>
+              {formatDuration(span.latencyMs)}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// --- Span Detail Tabs ---
+
+function SpanDetail({ span }: { span: FlatSpan }) {
+  const hasError = !!span.error;
+  const hasAttributes =
+    span.type === "llm" && (span.model || span.totalTokens != null || span.costUsd != null);
+
+  return (
+    <div className='flex h-full flex-col p-3'>
+      {/* Span header */}
+      <div className='mb-2 flex items-center gap-2'>
+        <h3 className='text-text-strong-950 truncate text-[13px] font-medium'>{span.name}</h3>
+        <Badge.Root
+          color={span.status === "success" ? "green" : span.status === "error" ? "red" : "orange"}
+          variant='light'
+          className='px-1.5 text-[10px]'
+        >
+          {span.status}
+        </Badge.Root>
+        <Badge.Root color='gray' variant='light' className='ml-auto px-1.5 text-[10px]'>
+          {span.type}
+        </Badge.Root>
+      </div>
+
+      <SegmentedControl defaultValue={hasError ? "error" : "input"}>
+        <SegmentedControlList className='h-7 w-fit'>
+          <SegmentedControlTab value='input' className='px-2 text-[11px]!'>
+            Input
+          </SegmentedControlTab>
+          <SegmentedControlTab value='output' className='px-2 text-[11px]!'>
+            Output
+          </SegmentedControlTab>
+          {hasError && (
+            <SegmentedControlTab value='error' className='text-error-base px-2 text-[11px]!'>
+              Error
+            </SegmentedControlTab>
+          )}
+          {hasAttributes && (
+            <SegmentedControlTab value='attributes' className='px-2 text-[11px]!'>
+              Attributes
+            </SegmentedControlTab>
+          )}
+          <SegmentedControlTab value='metadata' className='px-2 text-[11px]!'>
+            Metadata
+          </SegmentedControlTab>
+        </SegmentedControlList>
+
+        <SegmentedControlPanel value='input' className='mt-2'>
+          {span.input ? (
+            <pre className='bg-bg-weak-50 border-stroke-soft-200 overflow-auto rounded-md border p-3 font-mono text-[11px] break-all whitespace-pre-wrap'>
+              {JSON.stringify(span.input, null, 2)}
+            </pre>
+          ) : (
+            <p className='text-text-sub-600 text-[12px]'>No input data</p>
+          )}
+        </SegmentedControlPanel>
+
+        <SegmentedControlPanel value='output' className='mt-2'>
+          {span.output ? (
+            <pre className='bg-bg-weak-50 border-stroke-soft-200 overflow-auto rounded-md border p-3 font-mono text-[11px] break-all whitespace-pre-wrap'>
+              {JSON.stringify(span.output, null, 2)}
+            </pre>
+          ) : span.status === "running" ? (
+            <div className='border-warning-base/30 bg-warning-base/5 text-warning-base rounded-md border p-3 text-[12px]'>
+              Span is still running…
+            </div>
+          ) : (
+            <p className='text-text-sub-600 text-[12px]'>No output data</p>
+          )}
+        </SegmentedControlPanel>
+
+        {hasError && (
+          <SegmentedControlPanel value='error' className='mt-2'>
+            <div className='border-error-base/30 bg-error-base/5 rounded-md border p-3'>
+              <pre className='text-error-base/90 font-mono text-[11px] break-all whitespace-pre-wrap'>
+                {span.error}
+              </pre>
+            </div>
+          </SegmentedControlPanel>
+        )}
+
+        {hasAttributes && (
+          <SegmentedControlPanel value='attributes' className='mt-2'>
+            <div className='grid grid-cols-2 gap-3 text-[12px]'>
+              {span.model && <Attr label='Model' value={span.model} />}
+              {span.promptTokens != null && (
+                <Attr label='Prompt Tokens' value={String(span.promptTokens)} />
+              )}
+              {span.completionTokens != null && (
+                <Attr label='Completion Tokens' value={String(span.completionTokens)} />
+              )}
+              {span.totalTokens != null && (
+                <Attr label='Total Tokens' value={formatTokens(span.totalTokens)} />
+              )}
+              {span.costUsd != null && <Attr label='Cost' value={formatCost(span.costUsd)} />}
+              {span.latencyMs != null && (
+                <Attr label='Latency' value={formatDuration(span.latencyMs)} />
+              )}
+            </div>
+          </SegmentedControlPanel>
+        )}
+
+        <SegmentedControlPanel value='metadata' className='mt-2'>
+          <div className='grid grid-cols-2 gap-3 text-[12px]'>
+            <Attr label='Span ID' value={span.id} mono />
+            <Attr label='Type' value={span.type} />
+            <Attr label='Status' value={span.status} />
+            {span.startTime && (
+              <Attr label='Start' value={new Date(span.startTime).toLocaleTimeString()} />
+            )}
+            {span.endTime && (
+              <Attr label='End' value={new Date(span.endTime).toLocaleTimeString()} />
+            )}
+            {span.parentId && <Attr label='Parent ID' value={span.parentId} mono />}
+          </div>
+        </SegmentedControlPanel>
+      </SegmentedControl>
+    </div>
+  );
+}
+
+function Attr({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div>
+      <div className='text-text-sub-600 text-[11px]'>{label}</div>
+      <div className={cn("text-text-strong-950 mt-0.5", mono && "font-mono text-[11px]")}>
+        {value}
       </div>
     </div>
   );
@@ -375,4 +767,4 @@ function Waterfall() {
 
 // --- Compound export ---
 
-export const TraceDetailPanel = { Root, Header, Waterfall };
+export const TraceDetailPanel = { Root, Header, Body };

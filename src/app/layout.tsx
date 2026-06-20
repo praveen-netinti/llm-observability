@@ -1,3 +1,4 @@
+import * as Tooltip from "@radix-ui/react-tooltip";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 
@@ -31,7 +32,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <Tooltip.Provider delayDuration={300}>{children}</Tooltip.Provider>
         </ThemeProvider>
       </body>
     </html>

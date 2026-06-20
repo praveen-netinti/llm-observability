@@ -1,7 +1,6 @@
 "use client";
 
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
-import * as Tooltip from "@radix-ui/react-tooltip";
 import { RiCloseLine, RiLayoutRight2Line, RiSearchLine, RiSideBarLine } from "@remixicon/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -9,6 +8,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/utils/cn";
 
 import * as Button from "@/components/ui/button";
+import * as Tooltip from "@/components/ui/tooltip";
 
 import { HelpDropdown } from "./sidebar/help-dropdown";
 import { NavItemLink } from "./sidebar/nav-item-link";
@@ -62,118 +62,88 @@ const MainSidebar = forwardRef<MainSidebarRef>((_props, ref) => {
         >
           <div className='space-y-5'>
             <div className='before:bg-stroke-soft-200 relative flex pb-5 before:absolute before:right-0 before:bottom-0 before:left-0 before:h-px'>
-              <Tooltip.Provider delayDuration={300}>
-                <Tooltip.Root>
-                  <Tooltip.Trigger asChild>
-                    <Button.Root
-                      variant='neutral'
-                      mode='ghost'
-                      size='xsmall'
-                      aria-label='Toggle sidebar'
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleSidebar();
-                      }}
-                      className='group/logo hover:bg-bg-soft-200 h-8 w-8 cursor-e-resize p-0'
-                    >
-                      <div className='text-static-white text-2xs grid size-8 place-items-center rounded-xl bg-[#5f6200] transition-opacity duration-200 group-hover:hidden'>
-                        PR
-                      </div>
-                      <Button.Icon
-                        as={RiSideBarLine}
-                        className='text-text-soft-400 group-hover/logo:text-text-sub-600 hidden transition-opacity duration-200 group-hover:block'
-                      />
-                    </Button.Root>
-                  </Tooltip.Trigger>
-                  <Tooltip.Portal>
-                    <Tooltip.Content
-                      className='bg-bg-strong-950 text-text-white-0 shadow-tooltip z-61 rounded-md px-2 py-1 text-xs font-medium'
-                      side='right'
-                      sideOffset={8}
-                      align='center'
-                    >
-                      Toggle sidebar
-                      <Tooltip.Arrow className='fill-bg-strong-950' />
-                    </Tooltip.Content>
-                  </Tooltip.Portal>
-                </Tooltip.Root>
-              </Tooltip.Provider>
+              <Tooltip.Root>
+                <Tooltip.Trigger asChild>
+                  <Button.Root
+                    variant='neutral'
+                    mode='ghost'
+                    size='xsmall'
+                    aria-label='Toggle sidebar'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleSidebar();
+                    }}
+                    className='group/logo hover:bg-bg-soft-200 h-8 w-8 cursor-e-resize p-0'
+                  >
+                    <div className='text-static-white text-2xs grid size-8 place-items-center rounded-xl bg-[#5f6200] transition-opacity duration-200 group-hover:hidden'>
+                      PR
+                    </div>
+                    <Button.Icon
+                      as={RiSideBarLine}
+                      className='text-text-soft-400 group-hover/logo:text-text-sub-600 hidden transition-opacity duration-200 group-hover:block'
+                    />
+                  </Button.Root>
+                </Tooltip.Trigger>
+                <Tooltip.Content side='right' sideOffset={8} align='center'>
+                  Toggle sidebar
+                </Tooltip.Content>
+              </Tooltip.Root>
             </div>
 
             <div className='space-y-3'>
-              <Tooltip.Provider delayDuration={300}>
-                <Tooltip.Root>
-                  <Tooltip.Trigger asChild>
-                    <Button.Root
-                      variant='neutral'
-                      mode='ghost'
-                      size='xsmall'
-                      aria-label='Toggle Search'
-                      className='group/search hover:bg-bg-soft-200 cursor-pointer'
-                    >
-                      <Button.Icon
-                        as={RiSearchLine}
-                        className='text-text-soft-400 group-hover/search:text-text-sub-600'
-                      />
-                    </Button.Root>
-                  </Tooltip.Trigger>
-                  <Tooltip.Portal>
-                    <Tooltip.Content
-                      className='bg-bg-strong-950 text-text-white-0 shadow-tooltip z-50 rounded-md px-2 py-1 text-xs font-medium'
-                      side='right'
-                      sideOffset={8}
-                      align='center'
-                    >
-                      Toggle Search
-                      <Tooltip.Arrow className='fill-bg-strong-950' />
-                    </Tooltip.Content>
-                  </Tooltip.Portal>
-                </Tooltip.Root>
-              </Tooltip.Provider>
+              <Tooltip.Root>
+                <Tooltip.Trigger asChild>
+                  <Button.Root
+                    variant='neutral'
+                    mode='ghost'
+                    size='xsmall'
+                    aria-label='Toggle Search'
+                    className='group/search hover:bg-bg-soft-200 cursor-pointer'
+                  >
+                    <Button.Icon
+                      as={RiSearchLine}
+                      className='text-text-soft-400 group-hover/search:text-text-sub-600'
+                    />
+                  </Button.Root>
+                </Tooltip.Trigger>
+                <Tooltip.Content side='right' sideOffset={8} align='center'>
+                  Toggle Search
+                </Tooltip.Content>
+              </Tooltip.Root>
 
               {mainNavSection.items.map((item) => {
                 const IconComponent = item.icon;
                 const isActive = pathname === item.href.split("?")[0];
                 return (
-                  <Tooltip.Provider key={item.id} delayDuration={300}>
-                    <Tooltip.Root>
-                      <Tooltip.Trigger asChild>
-                        <Link
-                          href={item.href}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleLinkClick();
-                          }}
+                  <Tooltip.Root key={item.id}>
+                    <Tooltip.Trigger asChild>
+                      <Link
+                        href={item.href}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLinkClick();
+                        }}
+                        className={cn(
+                          "group/item flex items-center rounded-lg p-1.5 text-sm font-medium transition-colors duration-200",
+                          isActive
+                            ? "text-text-strong-950 bg-bg-soft-200"
+                            : "text-text-sub-600 hover:bg-bg-soft-200",
+                        )}
+                      >
+                        <IconComponent
                           className={cn(
-                            "group/item flex items-center rounded-lg p-1.5 text-sm font-medium transition-colors duration-200",
+                            "h-5 w-5 transition duration-200 ease-out",
                             isActive
-                              ? "text-text-strong-950 bg-bg-soft-200"
-                              : "text-text-sub-600 hover:bg-bg-soft-200",
+                              ? "text-text-strong-950"
+                              : "group-hover/item:text-text-sub-600 text-text-soft-400",
                           )}
-                        >
-                          <IconComponent
-                            className={cn(
-                              "h-5 w-5 transition duration-200 ease-out",
-                              isActive
-                                ? "text-text-strong-950"
-                                : "group-hover/item:text-text-sub-600 text-text-soft-400",
-                            )}
-                          />
-                        </Link>
-                      </Tooltip.Trigger>
-                      <Tooltip.Portal>
-                        <Tooltip.Content
-                          className='bg-bg-strong-950 text-text-white-0 shadow-tooltip z-50 rounded-md px-2 py-1 text-xs font-medium'
-                          side='right'
-                          sideOffset={8}
-                          align='center'
-                        >
-                          {item.label}
-                          <Tooltip.Arrow className='fill-bg-strong-950' />
-                        </Tooltip.Content>
-                      </Tooltip.Portal>
-                    </Tooltip.Root>
-                  </Tooltip.Provider>
+                        />
+                      </Link>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content side='right' sideOffset={8} align='center'>
+                      {item.label}
+                    </Tooltip.Content>
+                  </Tooltip.Root>
                 );
               })}
             </div>
@@ -222,16 +192,9 @@ const MainSidebar = forwardRef<MainSidebarRef>((_props, ref) => {
                         />
                       </Button.Root>
                     </Tooltip.Trigger>
-                    <Tooltip.Portal>
-                      <Tooltip.Content
-                        // className='bg-bg-strong-950 text-text-white-0 shadow-tooltip z-50 rounded-lg px-2.5 py-1 text-xs'
-                        className='bg-bg-white-0 text-text-strong-950 shadow-tooltip border-stroke-soft-200 z-50 rounded-lg border px-2.5 py-1 text-xs'
-                        sideOffset={6}
-                        align='center'
-                      >
-                        Toggle sidebar
-                      </Tooltip.Content>
-                    </Tooltip.Portal>
+                    <Tooltip.Content sideOffset={6} align='center'>
+                      Toggle sidebar
+                    </Tooltip.Content>
                   </Tooltip.Root>
                 </Tooltip.Provider>
               </div>

@@ -746,6 +746,12 @@
     0 6px 6px -3px rgba(23, 23, 23, 0), 0 3px 3px -1.5px rgba(23, 23, 23, 0),
     0 1px 1px -0.5px rgba(23, 23, 23, 0), 0 0 0 1px #262626,
     0 -1px 1px -0.5px rgba(23, 23, 23, 0) inset;
+
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
 }
 
 /* Keyframe Animations - System */

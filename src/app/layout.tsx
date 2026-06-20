@@ -3,10 +3,11 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 
 import { jetBrainsMono, openRunde } from "@/lib/fonts";
-
-import "./globals.css";
+import { cn } from "@/utils";
 
 import { ConsoleBanner } from "@/components/console-banner";
+
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -22,7 +23,7 @@ export default function RootLayout({
     <html
       lang='en'
       suppressHydrationWarning
-      className={`${openRunde.variable} ${jetBrainsMono.variable}`}
+      className={cn(openRunde.variable, jetBrainsMono.variable)}
     >
       <body className='font-sans antialiased'>
         <ConsoleBanner />

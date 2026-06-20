@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 
 import * as React from "react";
 
@@ -33,7 +33,7 @@ const TableHead = React.forwardRef<
     <th
       ref={forwardedRef}
       className={cn(
-        "bg-bg-weak-50 text-paragraph-sm text-text-sub-600 px-3 py-2 text-left first:rounded-l-lg last:rounded-r-lg",
+        "text-text-sub-600 h-8 px-3 text-left text-[12px] font-medium first:rounded-l-lg last:rounded-r-lg",
         className,
       )}
       {...rest}
@@ -51,13 +51,13 @@ const TableBody = React.forwardRef<
   return (
     <>
       {/* to have space between thead and tbody */}
-      <tbody
+      {/* <tbody
         aria-hidden='true'
         className='table-row'
         style={{
           height: spacing,
         }}
-      />
+      /> */}
 
       <tbody ref={forwardedRef} {...rest} />
     </>
@@ -67,7 +67,18 @@ TableBody.displayName = "TableBody";
 
 const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowElement>>(
   ({ className, ...rest }, forwardedRef) => {
-    return <tr ref={forwardedRef} className={cn("group/row", className)} {...rest} />;
+    return (
+      <tr
+        ref={forwardedRef}
+        className={cn(
+          "group/row transition-colors",
+          // "hover:bg-bg-weak-50",
+          // "data-[selected=true]:bg-primary-alpha-10",
+          className,
+        )}
+        {...rest}
+      />
+    );
   },
 );
 TableRow.displayName = "TableRow";
@@ -97,7 +108,21 @@ const TableCell = React.forwardRef<
     <td
       ref={forwardedRef}
       className={cn(
-        "group-hover/row:bg-bg-weak-50 h-16 px-3 transition duration-200 ease-out first:rounded-l-xl last:rounded-r-xl",
+        "h-12 px-3 transition duration-200 ease-out",
+        // Default rounded corners
+        "first:rounded-l-xl last:rounded-r-xl",
+        // Hover
+        "group-hover/row:bg-bg-weak-50",
+        // Selected
+        "group-data-[selected=true]/row:bg-primary-alpha-10",
+
+        // Connected with previous selected row
+        "group-data-[connected-top=true]/row:first:rounded-tl-none",
+        "group-data-[connected-top=true]/row:last:rounded-tr-none",
+
+        // Connected with next selected row
+        "group-data-[connected-bottom=true]/row:first:rounded-bl-none",
+        "group-data-[connected-bottom=true]/row:last:rounded-br-none",
         className,
       )}
       {...rest}

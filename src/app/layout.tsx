@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ThemeProvider } from "next-themes";
 
 import { jetBrainsMono, openRunde } from "@/lib/fonts";
 
@@ -20,7 +21,16 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${openRunde.variable} ${jetBrainsMono.variable}`}
     >
-      <body className='font-sans'>{children}</body>
+      <body className='font-sans'>
+        <ThemeProvider
+          attribute='class'
+          defaultTheme='light'
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

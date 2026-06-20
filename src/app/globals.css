@@ -803,6 +803,21 @@
   }
 }
 
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@utility animate-slide-in-right {
+  animation: slide-in-right 0.25s ease-out;
+}
+
 /* Custom styles */
 .remixicon path {
   transform: scale(0.8996);

@@ -21,7 +21,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${openRunde.variable} ${jetBrainsMono.variable}`}
     >
-      <body className='font-sans'>
+      <body className='font-sans antialiased'>
         <ThemeProvider
           attribute='class'
           defaultTheme='light'

@@ -15,7 +15,7 @@ export const selectVariants = tv({
     triggerRoot: [
       // base
       "group/trigger bg-bg-white-0 shadow-regular-xs ring-stroke-soft-200 min-w-0 shrink-0 ring-1 outline-none ring-inset",
-      "text-paragraph-sm text-text-strong-950",
+      "text-text-strong-950 text-[13px] font-medium",
       "flex items-center text-left",
       "transition duration-200 ease-out",
       // hover
@@ -69,6 +69,7 @@ export const selectVariants = tv({
       medium: {},
       small: {},
       xsmall: {},
+      xxsmall: {},
     },
     variant: {
       default: {
@@ -147,6 +148,13 @@ export const selectVariants = tv({
       variant: "default",
       class: {
         triggerRoot: "h-8 min-h-8 gap-1.5 rounded-lg pr-1.5 pl-2",
+      },
+    },
+    {
+      size: "xxsmall",
+      variant: "default",
+      class: {
+        triggerRoot: "h-7 min-h-7 gap-1 rounded-lg pr-1.5 pl-2",
       },
     },
     //#endregion
@@ -332,7 +340,7 @@ const SelectContent = React.forwardRef<
           <SelectPrimitives.Viewport asChild>
             <ScrollAreaPrimitives.Viewport
               style={{ overflowY: undefined }}
-              className='max-h-49 w-full scroll-py-2 overflow-auto p-2'
+              className='max-h-49 w-full scroll-py-2 overflow-auto py-1.5'
             >
               {children}
             </ScrollAreaPrimitives.Viewport>
@@ -359,7 +367,7 @@ const SelectItem = React.forwardRef<
       ref={forwardedRef}
       className={cn(
         // base
-        "group text-paragraph-sm text-text-strong-950 relative cursor-pointer rounded-lg p-2 pr-9 select-none",
+        "group text-text-strong-950 relative mx-1.5 h-8 cursor-pointer rounded-lg px-2 pr-9 text-[13px] font-medium select-none",
         "flex items-center gap-2 transition duration-200 ease-out",
         // disabled
         "data-disabled:text-text-disabled-300 data-disabled:pointer-events-none",
@@ -392,7 +400,7 @@ const SelectItem = React.forwardRef<
         </span>
       </SelectPrimitives.ItemText>
       <SelectPrimitives.ItemIndicator asChild>
-        <RiCheckLine className='text-text-sub-600 absolute top-1/2 right-2 size-5 shrink-0 -translate-y-1/2' />
+        <RiCheckLine className='text-text-sub-600 absolute top-1/2 right-2 size-4 shrink-0 -translate-y-1/2' />
       </SelectPrimitives.ItemIndicator>
     </SelectPrimitives.Item>
   );

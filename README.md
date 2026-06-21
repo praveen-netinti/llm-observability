@@ -1,5 +1,23 @@
 # NeoSigma — LLM Observability
 
+<p align="center">
+  <picture>
+    <source
+      media="(prefers-color-scheme: dark)"
+      srcset="public/splash-screen-dark-with-bg.png"
+    />
+    <source
+      media="(prefers-color-scheme: light)"
+      srcset="public/splash-screen-light-with-bg.png"
+    />
+    <img
+      src="public/splash-screen-light-with-bg.png"
+      alt="NeoSigma splash screen"
+      width="720"
+    />
+  </picture>
+</p>
+
 > A tracing & observability dashboard for LLM apps. It ingests a tree of traces
 > and spans (chains, tools, retrievers, LLM calls) and surfaces them through
 > aggregate metrics, a searchable trace list with a waterfall detail view, and a
@@ -20,12 +38,12 @@ bun install        # or: npm install
 bun dev            # or: npm run dev   →  http://localhost:3000
 ```
 
-| Task        | Command          |
-| ----------- | ---------------- |
-| Dev server  | `bun dev`        |
-| Prod build  | `bun run build`  |
-| Serve build | `bun start`      |
-| Lint        | `bun run lint`   |
+| Task        | Command         |
+| ----------- | --------------- |
+| Dev server  | `bun dev`       |
+| Prod build  | `bun run build` |
+| Serve build | `bun start`     |
+| Lint        | `bun run lint`  |
 
 ---
 
@@ -34,14 +52,14 @@ bun dev            # or: npm run dev   →  http://localhost:3000
 Everything below is wired up against the mock data. Start at the **Dashboard**,
 then open **Traces** → click any row to see the waterfall.
 
-| Page          | Route        | What to test                                                                                  |
-| ------------- | ------------ | --------------------------------------------------------------------------------------------- |
-| **Dashboard** | `/`          | Metric tiles (traces, cost, tokens, error rate, p50/p95, satisfaction); latency histogram, cost‑by‑model, error‑rate & token trends, sparklines, environment breakdown |
-| **Traces**    | `/traces`    | Search, sort, and status‑filter the trace list; resizable split view                          |
-| **Trace detail** | `/traces/[id]` | Hand‑built **waterfall** with overlapping/parallel bars and live "running" spans; click a span to inspect input/output, tokens & cost; prev/next trace nav |
-| **Issues**    | `/issues`    | Toggle **list ↔ board (kanban)**; drag cards between columns; group & change display options; multi‑select rows (`⌘/Ctrl + A`); open an issue for detail |
-| **Alerts**    | `/alerts`    | Slack‑style incident cards (alert → investigating → triage → resolved)                         |
-| **Settings**  | modal        | Open from the profile / help menu; **Appearance → toggle light / dark**; browse the settings pages |
+| Page             | Route          | What to test                                                                                                                                                           |
+| ---------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Dashboard**    | `/`            | Metric tiles (traces, cost, tokens, error rate, p50/p95, satisfaction); latency histogram, cost‑by‑model, error‑rate & token trends, sparklines, environment breakdown |
+| **Traces**       | `/traces`      | Search, sort, and status‑filter the trace list; resizable split view                                                                                                   |
+| **Trace detail** | `/traces/[id]` | Hand‑built **waterfall** with overlapping/parallel bars and live "running" spans; click a span to inspect input/output, tokens & cost; prev/next trace nav             |
+| **Issues**       | `/issues`      | Toggle **list ↔ board (kanban)**; drag cards between columns; group & change display options; multi‑select rows (`⌘/Ctrl + A`); open an issue for detail               |
+| **Alerts**       | `/alerts`      | Slack‑style incident cards (alert → investigating → triage → resolved)                                                                                                 |
+| **Settings**     | modal          | Open from the profile / help menu; **Appearance → toggle light / dark**; browse the settings pages                                                                     |
 
 **Global interactions**
 
@@ -73,7 +91,7 @@ The takeaways I actually built around:
   and drop shadows. Linear calls this a "neutral and timeless" surface where
   chrome color is deliberately restrained.
 - **Timeless over trendy** — A neutral gray base palette with one functional
-  accent. Color is reserved almost entirely for *status* (success / error /
+  accent. Color is reserved almost entirely for _status_ (success / error /
   running) rather than decoration — status is the most important signal in an
   observability tool, so it gets the color budget.
 - **Density with rhythm** — Tabular numerals for every metric, a mono face for
@@ -91,13 +109,13 @@ the issues list/board) before building.
 
 ## Stack & build
 
-| Layer       | Choice                                                                 |
-| ----------- | ---------------------------------------------------------------------- |
-| Framework   | Next.js 16 (App Router) · React 19 · TypeScript                        |
-| Styling     | Tailwind v4 with semantic CSS‑variable tokens (`bg-weak-50`, `text-strong-950`, `stroke-soft-200`) |
-| Theming     | Light **and** dark via `next-themes`                                   |
-| Primitives  | **Radix UI** (dialog, popover, dropdown, tabs, select, tooltip, scroll‑area…) |
-| Charts      | Recharts with custom tooltips; the trace waterfall is hand‑built       |
-| Interactions| `@dnd-kit` (kanban), `cmdk` (command palette), `motion` (splash/transitions) |
+| Layer        | Choice                                                                                             |
+| ------------ | -------------------------------------------------------------------------------------------------- |
+| Framework    | Next.js 16 (App Router) · React 19 · TypeScript                                                    |
+| Styling      | Tailwind v4 with semantic CSS‑variable tokens (`bg-weak-50`, `text-strong-950`, `stroke-soft-200`) |
+| Theming      | Light **and** dark via `next-themes`                                                               |
+| Primitives   | **Radix UI** (dialog, popover, dropdown, tabs, select, tooltip, scroll‑area…)                      |
+| Charts       | Recharts with custom tooltips; the trace waterfall is hand‑built                                   |
+| Interactions | `@dnd-kit` (kanban), `cmdk` (command palette), `motion` (splash/transitions)                       |
 
 ---

@@ -63,7 +63,7 @@ function ChartTooltip({
 
   return (
     <div
-      className='bg-bg-white-0 ring-stroke-soft-200 rounded-xl px-3 py-2.5 ring-1'
+      className='bg-bg-white-0 ring-stroke-soft-200 relative z-50 rounded-xl px-3 py-2.5 ring-1'
       style={{
         filter:
           "drop-shadow(0px 12px 24px rgba(14, 18, 27, 0.06)) drop-shadow(0px 1px 2px rgba(14, 18, 27, 0.03))",
@@ -635,6 +635,7 @@ function WidgetCostByModel() {
             </Pie>
             <RechartsTooltip
               cursor={false}
+              wrapperStyle={{ zIndex: 50 }}
               content={
                 <ChartTooltip
                   valueFormatter={(v) => `$${v.toFixed(3)} (${((v / total) * 100).toFixed(0)}%)`}

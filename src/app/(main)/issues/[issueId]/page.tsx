@@ -25,6 +25,7 @@ import {
 import { cn } from "@/utils";
 
 import { PRIORITY_CONFIG, STATUS_CONFIG } from "@/components/issues/issue-config";
+import { renderMrkdwn } from "@/lib/render-mrkdwn";
 import * as Breadcrumb from "@/components/ui/breadcrumb";
 import * as Button from "@/components/ui/button";
 import * as Select from "@/components/ui/select";
@@ -96,8 +97,8 @@ export default function IssueDetailPage({ params }: { params: Promise<{ issueId:
             <h1 className='text-title-h6 text-text-strong-950 mb-2'>{issue.title}</h1>
 
             {/* Description */}
-            <div className='prose prose-sm text-paragraph-sm text-text-sub-600 border-stroke-soft-200 mb-8 rounded-lg border p-4 whitespace-pre-wrap'>
-              {issue.description || "No description provided."}
+            <div className='text-paragraph-sm text-text-sub-600 border-stroke-soft-200 mb-8 rounded-lg border p-4'>
+              {issue.description ? renderMrkdwn(issue.description) : <span className="text-text-soft-400">No description provided.</span>}
             </div>
 
             {/* Activity */}

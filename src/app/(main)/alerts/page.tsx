@@ -14,6 +14,7 @@ import {
 import { cn } from "@/utils";
 
 import slackCards from "@/data/slack-cards.json";
+import { renderMrkdwn } from "@/lib/render-mrkdwn";
 import * as Breadcrumb from "@/components/ui/breadcrumb";
 import * as Button from "@/components/ui/button";
 import * as HorizontalStepper from "@/components/ui/horizontal-stepper";
@@ -39,48 +40,6 @@ const LIFECYCLE_ICONS = {
 };
 
 // Slack mrkdwn → React
-function renderMrkdwn(text: string) {
-  // Replace emoji shortcodes
-  let processed = text
-    .replace(/:rotating_light:/g, "🚨")
-    .replace(/:white_check_mark:/g, "✅")
-    .replace(/:mag:/g, "🔍")
-    .replace(/:eyes:/g, "👀")
-    .replace(/:warning:/g, "⚠️")
-    .replace(/:red_circle:/g, "🔴")
-    .replace(/:large_orange_circle:/g, "🟠")
-    .replace(/:thumbsdown:/g, "👎")
-    .replace(/:clock3:/g, "🕒")
-    .replace(/:github:/g, "🐙");
-
-  // Links: <url|label>
-  processed = processed.replace(/<(https?:\/\/[^|>]+)\|([^>]+)>/g, '[$2]($1)');
-  processed = processed.replace(/<(https?:\/\/[^>]+)>/g, '[$1]($1)');
-
-  // Code blocks
-  const parts = processed.split(/(```[\s\S]*?```)/g);
-
-  return parts.map((part, i) => {
-    if (part.startsWith("```") && part.endsWith("```")) {
-      const code = part.slice(3, -3).replace(/^[a-z]+\n/, "");
-      return (
-        <pre key={i} className="rounded-lg bg-bg-weak-50 border border-stroke-soft-200 p-3 text-paragraph-xs font-mono overflow-x-auto my-2">
-          {code}
-        </pre>
-      );
-    }
-    // Inline formatting
-    const formatted = part
-      .replace(/\*([^*]+)\*/g, '<b>$1</b>')
-      .replace(/_([^_]+)_/g, '<i>$1</i>')
-      .replace(/`([^`]+)`/g, '<code class="rounded bg-bg-weak-50 px-1 py-0.5 text-paragraph-xs font-mono">$1</code>')
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-primary-base hover:underline" target="_blank" rel="noopener">$1</a>')
-      .replace(/\n/g, "<br />");
-
-    return <span key={i} dangerouslySetInnerHTML={{ __html: formatted }} />;
-  });
-}
-
 function SlackCard({ blocks }: { blocks: SlackBlock[] }) {
   return (
     <div className="rounded-lg border-l-4 border-l-stroke-strong-950 border border-stroke-soft-200 bg-bg-white-0 p-4 space-y-3">

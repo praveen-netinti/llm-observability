@@ -23,7 +23,7 @@ const SEED_ISSUES: Issue[] = [
   {
     id: "PRA-1",
     title: "ToolException: connection refused in customer_support_agent",
-    description: "The agent calls the `lookup_order` tool, which reaches the orders service over HTTP. The service refused the connection and the agent has no retry or fallback, so the run aborts.",
+    description: "*Root cause*\nThe agent calls the `lookup_order` tool, which reaches the orders service over HTTP. The service refused the connection (`ToolException: connection refused`) and the agent has no retry or fallback, so the run aborts. ~13% of `customer_support_agent` runs in the last hour hit the same path.\n\n*Severity:*\n:red_circle: High\n\n*Environment:*\nstaging\n\n*Model:*\ngpt-4o\n\n*Cost so far:*\n$0.0080\n\n*Proposed fix*\n```python\n# retry the orders lookup on transient connection failures\n@retry(wait=wait_exponential(min=1, max=8), stop=stop_after_attempt(3))\ndef lookup_order(user_id):\n    return orders_client.get(user_id, timeout=5)\n```",
     status: "todo",
     priority: "high",
     assignee: "Praveen N",
@@ -35,7 +35,7 @@ const SEED_ISSUES: Issue[] = [
   {
     id: "PRA-2",
     title: "RAG doc QA generation failed after retrieval succeeded",
-    description: "Retrieval succeeded, but the final ChatOpenAI generation failed with `ToolException: connection refused`. The run produced no answer.",
+    description: ":warning: Retrieval succeeded, but the final `ChatOpenAI` generation failed with `ToolException: connection refused`. The run produced no answer.\n\n*Severity:*\n:large_orange_circle: Medium\n\n*Environment:*\nproduction",
     status: "in-progress",
     priority: "medium",
     assignee: "Ritvik S",
@@ -47,7 +47,7 @@ const SEED_ISSUES: Issue[] = [
   {
     id: "PRA-3",
     title: "Negative feedback: hallucinated detail in customer_support_agent",
-    description: "Reviewer flagged the response as inaccurate. Worth checking grounding before this reaches customers.",
+    description: "> Hallucinated a detail\n\nReviewer flagged the response as inaccurate. Worth checking grounding before this reaches customers.\n\nScore *0.48*  ·  model `gpt-4o`  ·  #quality",
     status: "backlog",
     priority: "low",
     assignee: null,

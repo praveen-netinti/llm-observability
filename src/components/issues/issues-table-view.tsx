@@ -316,6 +316,25 @@ export function IssuesTableView({ filter }: Props) {
                               toggleSelect(issue.id, e.shiftKey);
                             }}
                             onCheckedChange={() => {}}
+                            className={cn(
+                              "transition-all duration-200 ease-out",
+                              "opacity-0",
+
+                              // Show on row hover
+                              "group-hover/row:opacity-100",
+
+                              // Keep visible when selected
+                              "group-data-[selected=true]/row:opacity-100",
+
+                              // Keep visible when keyboard focused
+                              "focus-visible:opacity-100",
+
+                              // Keep visible while interacting
+                              "hover:opacity-100",
+
+                              // Optional subtle scale animation
+                              "scale-95 group-hover/row:scale-100 group-data-[selected=true]/row:scale-100",
+                            )}
                           />
                         </Table.Cell>
                         {/* Priority */}

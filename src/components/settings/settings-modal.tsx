@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
 
 import type { SettingsPageId } from "@/contexts/settings-context";
 import { cn } from "@/utils/cn";
 import SettingsHeader from "@/components/layout/settings-header";
 import SettingsSidebar from "@/components/settings/settings-sidebar";
+import * as Modal from "@/components/ui/modal";
 import Advanced from "@/components/settings/pages/advanced";
 import Alerts from "@/components/settings/pages/alerts";
 import ApiKeys from "@/components/settings/pages/api-keys";
@@ -117,18 +117,7 @@ export default function SettingsModal({
   const [showMobileContent, setShowMobileContent] = useState(
     () => typeof window !== "undefined" && window.innerWidth >= 1024,
   );
-  const [isAnimating, setIsAnimating] = useState(false);
   const [isPageAnimating, setIsPageAnimating] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      const timer = setTimeout(() => setIsAnimating(true), 10);
-      return () => clearTimeout(timer);
-    }
-    // Defensive: if closed externally (not via handleClose), unmount cleanly.
-    const timer = setTimeout(() => setIsAnimating(false), 0);
-    return () => clearTimeout(timer);
-  }, [isOpen]);
 
   const currentPage = pageConfig[activePage] ?? pageConfig.organization;
   const PageComponent = currentPage.component;
@@ -144,13 +133,10 @@ export default function SettingsModal({
   };
 
   const handleClose = () => {
-    setIsAnimating(false);
-    setTimeout(() => {
-      onActivePageChange("organization");
-      const isDesktop = window.innerWidth >= 1024;
-      setShowMobileContent(isDesktop);
-      onClose();
-    }, 400);
+    onActivePageChange("organization");
+    const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
+    setShowMobileContent(isDesktop);
+    onClose();
   };
 
   const handleContentClose = () => {
@@ -162,24 +148,21 @@ export default function SettingsModal({
     }
   };
 
-  if (!isOpen && !isAnimating) return null;
-  if (typeof document === "undefined") return null;
-
-  return createPortal(
-    <div
-      className={cn(
-        "fixed top-0 left-0 z-62 flex h-full w-full items-end justify-center transition-all duration-400 lg:items-center",
-        isAnimating ? "bg-overlay-gray" : "bg-transparent",
-      )}
-      onClick={handleClose}
-    >
-      <div
+  return (
+    <Modal.Root open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <Modal.Content
+        showClose={false}
+        aria-label='Settings'
+        overlayClassName='items-end p-0 backdrop-blur-[10px] lg:items-center'
         className={cn(
-          "modal-wrapper lg:shadow-complex lg:bg-bg-white-0 flex w-full items-end overflow-hidden transition-transform duration-400 ease-out lg:h-180 lg:max-h-[80vh] lg:w-229.5 lg:items-center lg:gap-1.5 lg:rounded-[28px] lg:p-1.5 xl:h-180 xl:w-289.5",
-          isAnimating ? "translate-y-0" : "translate-y-full lg:translate-y-0 lg:opacity-0",
+          // override the default small-dialog sizing
+          "flex max-w-none items-end overflow-hidden bg-transparent p-0 shadow-none",
+          "w-full rounded-none",
+          "lg:bg-bg-white-0 lg:shadow-complex lg:h-180 lg:max-h-[80vh] lg:w-229.5 lg:items-center lg:gap-1.5 lg:rounded-[28px] lg:p-1.5 xl:h-180 xl:w-289.5",
         )}
-        onClick={(e) => e.stopPropagation()}
       >
+        <Modal.Title className='sr-only'>Settings</Modal.Title>
+        <Modal.Description className='sr-only'>{currentPage.description}</Modal.Description>
         <SettingsSidebar
           activePage={activePage}
           onPageChange={handlePageChange}
@@ -209,8 +192,7 @@ export default function SettingsModal({
             <PageComponent />
           </div>
         </div>
-      </div>
-    </div>,
-    document.body,
+      </Modal.Content>
+    </Modal.Root>
   );
 }

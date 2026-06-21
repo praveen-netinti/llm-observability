@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { RiCloseLine, RiMore2Line, RiSearchLine } from "@remixicon/react";
+import Image from "next/image";
 
 import { cn } from "@/utils/cn";
+
 import * as Avatar from "@/components/ui/avatar";
 import * as Button from "@/components/ui/button";
 import * as Input from "@/components/ui/input";
@@ -50,10 +52,38 @@ const teamOverview = {
 };
 
 const members: TeamMember[] = [
-  { id: "1", name: "Sophia Williams", email: "sophia@neosigma.ai", initials: "S", role: "Owner", color: "yellow" },
-  { id: "2", name: "James Brown", email: "james@neosigma.ai", initials: "J", role: "Admin", color: "gray" },
-  { id: "3", name: "Arthur Taylor", email: "arthur@neosigma.ai", initials: "A", role: "Analyst", color: "blue" },
-  { id: "4", name: "Emma Wright", email: "emma@neosigma.ai", initials: "E", role: "Viewer", color: "sky" },
+  {
+    id: "1",
+    name: "Sophia Williams",
+    email: "sophia@neosigma.ai",
+    initials: "S",
+    role: "Owner",
+    color: "yellow",
+  },
+  {
+    id: "2",
+    name: "James Brown",
+    email: "james@neosigma.ai",
+    initials: "J",
+    role: "Admin",
+    color: "gray",
+  },
+  {
+    id: "3",
+    name: "Arthur Taylor",
+    email: "arthur@neosigma.ai",
+    initials: "A",
+    role: "Analyst",
+    color: "blue",
+  },
+  {
+    id: "4",
+    name: "Emma Wright",
+    email: "emma@neosigma.ai",
+    initials: "E",
+    role: "Viewer",
+    color: "sky",
+  },
 ];
 
 const roleOptions = [
@@ -90,7 +120,14 @@ export default function Members() {
           <div className='flex flex-col justify-between px-5 lg:flex-row lg:items-center lg:px-0'>
             <div className='mb-3 flex items-center gap-3 lg:mb-0'>
               <div className='bg-bg-white-0 border-stroke-soft-200 flex size-10 items-center justify-center rounded-full border font-medium lg:size-8 xl:size-10'>
-                <Logo className='size-5 text-green-600' />
+                {/* <Logo className='size-5 text-green-600' /> */}
+                <Image
+                  src='/neosigma-icon.png'
+                  width={32}
+                  height={32}
+                  alt='Logo'
+                  className='size-5'
+                />
               </div>
               <div className='flex flex-col gap-1'>
                 <div className='text-text-strong-950 tracking-spacing-tiny-2 text-sm font-medium'>

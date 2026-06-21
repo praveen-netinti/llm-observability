@@ -2,17 +2,15 @@
 
 import * as React from "react";
 import { useSidebar } from "@/contexts/sidebar-context";
-import { RiLayoutLeft2Line, RiSpeedLine } from "@remixicon/react";
+import { RiArrowDownSFill, RiArrowUpSFill, RiLayoutLeft2Line, RiSpeedLine, RiThumbDownLine, RiThumbUpLine } from "@remixicon/react";
 import { format } from "date-fns";
 import {
   Area,
   AreaChart,
   CartesianGrid,
-  Line,
-  LineChart,
+  Tooltip as RechartsTooltip,
   ReferenceLine,
   ResponsiveContainer,
-  Tooltip as RechartsTooltip,
   XAxis,
   YAxis,
 } from "recharts";
@@ -20,6 +18,7 @@ import {
 import {
   getCostByModel,
   getCostSparkline,
+  getEnvironmentBreakdown,
   getErrorRateOverTime,
   getErrorsSparkline,
   getLatencyHistogram,
@@ -43,8 +42,8 @@ const tracesSparkline = getTracesSparkline();
 const costSparkline = getCostSparkline();
 const tokensSparkline = getTokensSparkline();
 const errorsSparkline = getErrorsSparkline();
+const envBreakdown = getEnvironmentBreakdown();
 
-// Custom tooltip matching marketing-template-master style
 function ChartTooltip({
   active,
   payload,
@@ -90,7 +89,6 @@ function ChartTooltip({
   );
 }
 
-// -- Line chart class pattern from marketing-template-master --
 const lineChartClassName = cn(
   "[&_.recharts-cartesian-grid-horizontal>line]:stroke-bg-weak-50 [&_.recharts-cartesian-grid-horizontal>line]:[stroke-dasharray:0]",
   "[&_.recharts-cartesian-grid-vertical>line:last-child]:opacity-0 [&_.recharts-cartesian-grid-vertical>line:nth-last-child(2)]:opacity-0",
@@ -103,10 +101,107 @@ const activeDotProps = {
   r: 5.5,
   strokeWidth: 3,
   className:
-    "stroke-stroke-white-0 [filter:drop-shadow(0_6px_10px_#0e121b0f)_drop-shadow(0_2px_4px_#0e121b08)]",
+    "stroke-stroke-white-0 filter-[drop-shadow(0_6px_10px_#0e121b0f)_drop-shadow(0_2px_4px_#0e121b08)]",
 };
 
-// -- Stat Cards (campaign-data style with sparkline) --
+// -- Stat Tiles (bordered cards with trend indicator) --
+function StatTiles() {
+  const tiles: {
+    title: string;
+    value: string;
+    delta?: { value: number; goodWhenDown?: boolean };
+    context: string;
+  }[] = [
+    {
+      title: "Total Traces",
+      value: stats.totalTraces.toLocaleString(),
+      delta: { value: stats.tracesDelta },
+      context: `${stats.dayCount}d`,
+    },
+    {
+      title: "Total Cost",
+      value: `$${stats.totalCost.toFixed(2)}`,
+      delta: { value: stats.costDelta },
+      context: `${stats.modelCount} models`,
+    },
+    {
+      title: "Total Tokens",
+      value:
+        stats.totalTokens >= 1000
+          ? `${(stats.totalTokens / 1000).toFixed(1)}K`
+          : String(stats.totalTokens),
+      delta: { value: stats.tokensDelta },
+      context: "in + out",
+    },
+    {
+      title: "Error Rate",
+      value: `${stats.errorRate.toFixed(1)}%`,
+      delta: { value: stats.errorsDelta, goodWhenDown: true },
+      context: `${stats.errorCount} failed`,
+    },
+    {
+      title: "P50 Latency",
+      value: formatMs(stats.p50),
+      context: "median",
+    },
+    {
+      title: "P95 Latency",
+      value: formatMs(stats.p95),
+      context: `${stats.completedCount} done`,
+    },
+  ];
+
+  return (
+    <div className='grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6'>
+      {tiles.map((tile, idx) => (
+        <div
+          key={tile.title}
+          className={cn(
+            "flex flex-col rounded-xl border p-3 transition-colors",
+            idx === 0
+              ? "border-stroke-soft-200 bg-bg-weak-50"
+              : "border-stroke-soft-200/60 bg-bg-white-0 hover:border-stroke-soft-200 hover:bg-bg-weak-50",
+          )}
+        >
+          <span className='text-label-xs text-text-soft-400'>{tile.title}</span>
+          <span className='text-title-h5 text-text-strong-950 mt-1 tracking-tight tabular-nums'>
+            {tile.value}
+          </span>
+          <div className='mt-4 flex flex-wrap items-center gap-1'>
+            {tile.delta && Math.abs(tile.delta.value) >= 0.1 ? (
+              <>
+                <DeltaIndicator value={tile.delta.value} goodWhenDown={tile.delta.goodWhenDown} />
+                <span className='text-label-xs text-text-soft-400 whitespace-nowrap'>
+                  vs prev
+                </span>
+              </>
+            ) : (
+              <span className='text-label-xs text-text-soft-400 whitespace-nowrap'>
+                {tile.context}
+              </span>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DeltaIndicator({ value, goodWhenDown }: { value: number; goodWhenDown?: boolean }) {
+  const isUp = value > 0;
+  const isGood = goodWhenDown ? !isUp : isUp;
+  return (
+    <span
+      className={cn(
+        "text-label-xs flex items-center gap-0.5 font-medium tabular-nums",
+        isGood ? "text-success-base" : "text-error-base",
+      )}
+    >
+      {isUp ? <RiArrowUpSFill className='size-3.5' /> : <RiArrowDownSFill className='size-3.5' />}
+      {Math.abs(value).toFixed(0)}%
+    </span>
+  );
+}
 function StatCards() {
   const [latencyView, setLatencyView] = React.useState<"p50" | "p95">("p50");
 
@@ -165,7 +260,7 @@ function StatCards() {
             </div>
           </div>
         </div>
-        <div className='border-faded-lighter flex h-[62px] items-center border-t px-4'>
+        <div className='border-faded-lighter flex h-15.5 items-center border-t px-4'>
           <ButtonGroup.Root size='xxsmall'>
             <ButtonGroup.Item
               data-state={latencyView === "p50" ? "on" : "off"}
@@ -202,8 +297,8 @@ function StatCard({
   color: string;
 }) {
   return (
-    <div className='bg-bg-white-0 shadow-regular-xs ring-stroke-soft-200 relative flex w-full flex-col overflow-hidden rounded-2xl ring-1 ring-inset'>
-      <div className='flex items-start gap-2 p-5 pb-3'>
+    <div className='bg-bg-white-0 ring-faded-lighter relative flex w-full flex-col rounded-2xl ring-0 ring-inset'>
+      <div className='flex items-start gap-2 pb-3'>
         <div className='flex-1'>
           <div className='text-label-sm text-text-sub-600'>{title}</div>
           <div className='mt-1 flex items-center gap-2'>
@@ -214,7 +309,7 @@ function StatCard({
           </div>
         </div>
       </div>
-      <div className='border-faded-lighter h-[62px] border-t'>
+      <div className='h-[62px]'>
         <ResponsiveContainer width='100%' height='100%'>
           <AreaChart data={data} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
             <XAxis hide dataKey='date' />
@@ -339,7 +434,7 @@ function WidgetLatencyDistribution() {
         badgeColor='gray'
         description='median (p50)'
       >
-        <div className='text-label-xs text-text-soft-400 flex items-center gap-3'>
+        {/* <div className='text-label-xs text-text-soft-400 flex items-center gap-3'>
           <span className='flex items-center gap-1'>
             <span className='bg-information-base inline-block size-2 rounded-full' />
             p50
@@ -348,11 +443,15 @@ function WidgetLatencyDistribution() {
             <span className='bg-warning-base inline-block size-2 rounded-full' />
             p95
           </span>
-        </div>
+        </div> */}
+
+        <Button.Root size='xsmall' variant='neutral' mode='stroke'>
+          Details
+        </Button.Root>
       </ChartHeader>
 
-      <ResponsiveContainer width='100%' height={192}>
-        <LineChart
+      <ResponsiveContainer width='100%' height={192} className="pl-3 pr-1">
+        <AreaChart
           data={histogram}
           margin={{ top: 6, right: 0, left: 0, bottom: 6 }}
           className={lineChartClassName}
@@ -385,30 +484,126 @@ function WidgetLatencyDistribution() {
             }
           />
           <ReferenceLine
-            x={`${(Math.floor(stats.p50 / 500) * 500 / 1000).toFixed(1)}`}
+            x={`${((Math.floor(stats.p50 / 500) * 500) / 1000).toFixed(1)}`}
             stroke='var(--color-information-base)'
             strokeDasharray='4 4'
             strokeWidth={1.5}
-            label={{ value: "p50", position: "insideTopRight", fontSize: 10, fill: "var(--color-information-base)", dy: 4 }}
+            label={{
+              value: "p50",
+              position: "insideTopRight",
+              fontSize: 10,
+              fill: "var(--color-information-base)",
+              dy: 4,
+            }}
           />
           <ReferenceLine
-            x={`${(Math.floor(stats.p95 / 500) * 500 / 1000).toFixed(1)}`}
+            x={`${((Math.floor(stats.p95 / 500) * 500) / 1000).toFixed(1)}`}
             stroke='var(--color-warning-base)'
             strokeDasharray='4 4'
             strokeWidth={1.5}
-            label={{ value: "p95", position: "insideTopRight", fontSize: 10, fill: "var(--color-warning-base)", dy: 4 }}
+            label={{
+              value: "p95",
+              position: "insideTopRight",
+              fontSize: 10,
+              fill: "var(--color-warning-base)",
+              dy: 4,
+            }}
           />
-          <Line
+          <Area
+            type='monotone'
             dataKey='count'
             stroke='var(--color-primary-base)'
             strokeWidth={2}
-            dot={false}
-            strokeLinejoin='round'
+            fill='var(--color-primary-base)'
+            fillOpacity={0.08}
             activeDot={activeDotProps}
           />
-        </LineChart>
+        </AreaChart>
       </ResponsiveContainer>
     </ChartCard>
+  );
+}
+
+// -- Segmented tracker bar (ProgressChart style, CSS-only) --
+function Tracker({ value }: { value: number }) {
+  return (
+    <div className='relative h-6 w-full overflow-hidden'>
+      <div
+        className='bg-bg-soft-200 absolute inset-0'
+        style={{
+          WebkitMaskImage: "linear-gradient(90deg, #000 6px, #0000 6px)",
+          maskImage: "linear-gradient(90deg, #000 6px, #0000 6px)",
+          maskSize: "9px 100%",
+          maskRepeat: "space",
+        }}
+      />
+      <div
+        className='absolute inset-y-0 left-0 overflow-hidden'
+        style={{
+          width: `${Math.max(0, Math.min(100, value))}%`,
+          WebkitMaskImage: "linear-gradient(90deg, #000 6px, #0000 6px)",
+          maskImage: "linear-gradient(90deg, #000 6px, #0000 6px)",
+          maskSize: "9px 100%",
+          maskRepeat: "space",
+        }}
+      >
+        <div className='bg-primary-base absolute inset-0' style={{ width: "100vw" }} />
+      </div>
+    </div>
+  );
+}
+
+// -- Stacked category bar (part-to-whole) --
+const CATEGORY_COLORS = [
+  "var(--color-primary-base)",
+  "var(--color-orange-400)",
+  "var(--color-orange-300)",
+  "var(--color-warning-base)",
+  "var(--color-information-base)",
+];
+
+function CategoryBar({
+  data,
+}: {
+  data: { label: string; value: number; sub?: string }[];
+}) {
+  const total = data.reduce((s, d) => s + d.value, 0) || 1;
+  return (
+    <div className='flex flex-col gap-4 px-6 pb-6 pt-2'>
+      <div className='flex h-3 w-full gap-[3px] overflow-hidden'>
+        {data.map((d, i) => (
+          <div
+            key={d.label}
+            className='h-full rounded-sm transition-all'
+            style={{
+              width: `${(d.value / total) * 100}%`,
+              backgroundColor: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
+            }}
+          />
+        ))}
+      </div>
+      <div className='flex flex-col gap-2.5'>
+        {data.map((d, i) => (
+          <div key={d.label} className='flex items-center gap-2'>
+            <span
+              className='size-2 shrink-0 rounded-full'
+              style={{ backgroundColor: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }}
+            />
+            <span className='text-label-sm text-text-sub-600 flex-1 truncate'>
+              {d.label}
+            </span>
+            {d.sub && (
+              <span className='text-label-xs text-text-soft-400 tabular-nums'>
+                {d.sub}
+              </span>
+            )}
+            <span className='text-label-sm text-text-strong-950 w-12 text-right tabular-nums'>
+              {((d.value / total) * 100).toFixed(0)}%
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -426,27 +621,95 @@ function WidgetCostByModel() {
         description='total spend'
       />
 
-      <div className='flex flex-col gap-3'>
-        {costByModel.map((item) => {
-          const pct = (item.cost / stats.totalCost) * 100;
-          return (
-            <div key={item.model} className='flex flex-col gap-1.5'>
-              <div className='flex items-center justify-between'>
-                <div className='text-label-sm text-text-sub-600'>{item.model}</div>
-                <div className='text-label-sm text-text-strong-950 tabular-nums'>
-                  ${item.cost.toFixed(3)}
-                </div>
-              </div>
-              <div className='bg-bg-weak-50 h-2 w-full overflow-hidden rounded-full'>
-                <div
-                  className='bg-primary-base h-full rounded-full transition-all'
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-            </div>
-          );
-        })}
+      <div>
+
       </div>
+      <CategoryBar
+        data={costByModel.map((item) => ({
+          label: item.model,
+          value: item.cost,
+          sub: `$${item.cost.toFixed(3)} · ${item.tokens.toLocaleString()} tok`,
+        }))}
+      />
+    </ChartCard>
+  );
+}
+
+// -- Reliability & Feedback (tracker-based) --
+function WidgetReliability() {
+  return (
+    <ChartCard>
+      <ChartHeader
+        title='Reliability'
+        value={`${stats.successRate.toFixed(1)}%`}
+        badge={`${stats.successCount} ok`}
+        badgeColor='green'
+        description='success rate'
+      />
+
+      <div className='flex flex-col gap-5 px-6 pb-6'>
+        {/* Success rate tracker */}
+        <div className='flex flex-col gap-1.5'>
+          <div className='flex items-center justify-between'>
+            <span className='text-label-sm text-text-sub-600'>Success rate</span>
+            <span className='text-label-sm text-text-strong-950 tabular-nums'>
+              {stats.successRate.toFixed(1)}%
+            </span>
+          </div>
+          <Tracker value={stats.successRate} />
+          <span className='text-label-xs text-text-soft-400 tabular-nums'>
+            {stats.successCount} of {stats.totalTraces} traces succeeded
+          </span>
+        </div>
+
+        {/* User satisfaction tracker */}
+        {stats.feedbackTotal > 0 && (
+          <div className='flex flex-col gap-1.5'>
+            <div className='flex items-center justify-between'>
+              <span className='text-label-sm text-text-sub-600'>
+                User satisfaction
+              </span>
+              <span className='text-label-sm text-text-strong-950 tabular-nums'>
+                {stats.satisfactionRate.toFixed(0)}%
+              </span>
+            </div>
+            <Tracker value={stats.satisfactionRate} />
+            <span className='text-label-xs text-text-soft-400 flex items-center gap-1 tabular-nums'>
+              <RiThumbUpLine className='text-success-base size-3.5' />
+              {stats.feedbackUp}
+              <span className='mx-0.5'>·</span>
+              <RiThumbDownLine className='text-error-base size-3.5' />
+              {stats.feedbackDown}
+              <span className='ml-1'>from {stats.feedbackTotal} ratings</span>
+            </span>
+          </div>
+        )}
+      </div>
+    </ChartCard>
+  );
+}
+
+// -- Traffic by Environment (category bar) --
+function WidgetEnvironments() {
+  if (envBreakdown.length === 0) return <EmptyChart title='Traffic by Environment' />;
+
+  return (
+    <ChartCard>
+      <ChartHeader
+        title='Traffic by Environment'
+        value={stats.totalTraces.toLocaleString()}
+        badge={`${envBreakdown.length} envs`}
+        badgeColor='gray'
+        description='total traces'
+      />
+
+      <CategoryBar
+        data={envBreakdown.map((e) => ({
+          label: e.label,
+          value: e.value,
+          sub: `${e.value} traces`,
+        }))}
+      />
     </ChartCard>
   );
 }
@@ -464,9 +727,8 @@ function WidgetErrorRate() {
         badgeColor='red'
         description='of all traces'
       />
-
-      <ResponsiveContainer width='100%' height={192}>
-        <LineChart
+      <ResponsiveContainer width='100%' height={192} className='pl-2 pr-3'>
+        <AreaChart
           data={errorOverTime}
           margin={{ top: 6, right: 0, left: 0, bottom: 6 }}
           className={lineChartClassName}
@@ -499,15 +761,16 @@ function WidgetErrorRate() {
             tickFormatter={(v) => `${v.toFixed(0)}%`}
             className={axisClassName}
           />
-          <Line
+          <Area
+            type='monotone'
             dataKey='rate'
             stroke='var(--color-error-base)'
             strokeWidth={2}
-            dot={false}
-            strokeLinejoin='round'
+            fill='var(--color-error-base)'
+            fillOpacity={0.08}
             activeDot={activeDotProps}
           />
-        </LineChart>
+        </AreaChart>
       </ResponsiveContainer>
     </ChartCard>
   );
@@ -531,18 +794,24 @@ function WidgetTokenUsage() {
       >
         <div className='text-label-xs text-text-soft-400 flex items-center gap-3'>
           <span className='flex items-center gap-1'>
-            <span className='bg-information-base inline-block size-2 rounded-full' />
+            <span
+              className='inline-block size-2 rounded-full'
+              style={{ backgroundColor: "var(--color-primary-base)" }}
+            />
             Prompt
           </span>
           <span className='flex items-center gap-1'>
-            <span className='bg-success-base inline-block size-2 rounded-full' />
+            <span
+              className='inline-block size-2 rounded-full'
+              style={{ backgroundColor: "var(--color-orange-300)" }}
+            />
             Completion
           </span>
         </div>
       </ChartHeader>
 
-      <ResponsiveContainer width='100%' height={192}>
-        <LineChart
+      <ResponsiveContainer width='100%' height={192} className="pl-4 pr-4">
+        <AreaChart
           data={tokenOverTime}
           margin={{ top: 6, right: 0, left: 0, bottom: 6 }}
           className={lineChartClassName}
@@ -577,23 +846,25 @@ function WidgetTokenUsage() {
             tickFormatter={(v) => new Intl.NumberFormat("en-US", { notation: "compact" }).format(v)}
             className={axisClassName}
           />
-          <Line
+          <Area
+            type='monotone'
             dataKey='prompt'
-            stroke='var(--color-information-base)'
+            stroke='var(--color-primary-base)'
             strokeWidth={2}
-            dot={false}
-            strokeLinejoin='round'
+            fill='var(--color-primary-base)'
+            fillOpacity={0.08}
             activeDot={activeDotProps}
           />
-          <Line
+          <Area
+            type='monotone'
             dataKey='completion'
-            stroke='var(--color-success-base)'
+            stroke='var(--color-orange-300)'
             strokeWidth={2}
-            dot={false}
-            strokeLinejoin='round'
+            fill='var(--color-orange-300)'
+            fillOpacity={0.08}
             activeDot={activeDotProps}
           />
-        </LineChart>
+        </AreaChart>
       </ResponsiveContainer>
     </ChartCard>
   );
@@ -602,7 +873,7 @@ function WidgetTokenUsage() {
 // -- Shared --
 function ChartCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className='bg-bg-white-0 shadow-regular-xs ring-stroke-soft-200 relative flex w-full flex-col gap-5 rounded-2xl p-5 ring-1 ring-inset'>
+    <div className='border-faded-lighter flex w-full flex-col gap-5 rounded-3xl border'>
       {children}
     </div>
   );
@@ -624,7 +895,7 @@ function ChartHeader({
   children?: React.ReactNode;
 }) {
   return (
-    <div className='flex flex-col justify-between gap-3 sm:flex-row sm:items-center'>
+    <div className='flex flex-col justify-between gap-3 px-6 pt-6 sm:flex-row sm:items-center'>
       <div>
         <div className='text-label-sm text-text-sub-600'>{title}</div>
         {value && (
@@ -646,12 +917,10 @@ function ChartHeader({
 
 function EmptyChart({ title }: { title: string }) {
   return (
-    <ChartCard>
-      <div className='flex h-[232px] flex-col items-center justify-center gap-2'>
-        <div className='text-label-sm text-text-sub-600'>{title}</div>
-        <div className='text-paragraph-sm text-text-soft-400'>No data available</div>
-      </div>
-    </ChartCard>
+    <div className='flex h-[192px] flex-col items-center justify-center gap-2'>
+      <div className='text-label-sm text-text-sub-600'>{title}</div>
+      <div className='text-paragraph-sm text-text-soft-400'>No data available</div>
+    </div>
   );
 }
 
@@ -662,46 +931,33 @@ function formatMs(ms: number): string {
 
 // -- Main Page --
 export default function MainPage() {
-  const { onMenuClick } = useSidebar();
-
   return (
     <div className='flex h-full flex-col lg:p-2 lg:pl-0'>
-      <div className='bg-bg-white-0 lg:border-stroke-soft-200 relative flex h-full flex-col lg:rounded-2xl lg:border'>
-        <div className='border-faded-lighter flex h-11 w-full items-center border-b px-4'>
-          <Button.Root
-            variant='neutral'
-            mode='ghost'
-            size='xxsmall'
-            onClick={onMenuClick}
-            className='size-7 cursor-pointer rounded-lg p-0 lg:hidden'
-          >
-            <Button.Icon as={RiLayoutLeft2Line} className='text-text-soft-400' />
-          </Button.Root>
-          <RiSpeedLine className='text-text-soft-400 mr-2 size-4' />
-          <span className='text-label-sm text-text-strong-950'>Dashboard</span>
+      <div className='bg-bg-white-0 lg:border-stroke-soft-200 relative flex h-full flex-col overflow-y-auto lg:rounded-2xl lg:border'>
+        <div className='flex items-center justify-between px-4 py-5 lg:px-8'>
+          <div>
+            <div className='text-label-lg text-text-strong-950'>Good morning, Praveen</div>
+            <div className='text-label-sm text-text-sub-600 mt-1'>
+              Welcome back to your dashboard 👋🏻
+            </div>
+          </div>
         </div>
 
-        <div className='flex-1 overflow-y-auto'>
-          <div className='px-4 py-6 lg:px-8'>
-            <StatCards />
-          </div>
+        <div className='px-4 pt-4 lg:px-8'>
+          <StatTiles />
+        </div>
 
-          {/* <div className='px-4 py-6 lg:px-8'>
-            <StatSummary />
-          </div> */}
-
-          <div className='px-4 lg:px-8'>
-            <Divider.Root />
-          </div>
-
-          <div className='flex flex-col gap-6 px-4 py-6 lg:px-8'>
-            <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
+        <div className='px-4 py-6 lg:px-8'>
+          <div className='flex flex-col gap-4 lg:flex-row lg:items-start'>
+            <div className='flex flex-1 flex-col gap-4'>
               <WidgetLatencyDistribution />
-              <WidgetCostByModel />
-            </div>
-            <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
               <WidgetErrorRate />
+              <WidgetReliability />
+            </div>
+            <div className='flex flex-1 flex-col gap-4'>
+              <WidgetCostByModel />
               <WidgetTokenUsage />
+              <WidgetEnvironments />
             </div>
           </div>
         </div>

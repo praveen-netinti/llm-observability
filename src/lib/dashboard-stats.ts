@@ -18,6 +18,64 @@ const latencies = completedTraces
   .map((t) => t.latencyMs as number)
   .sort((a, b) => a - b);
 
+// Date span of the dataset
+const sortedByTime = [...traces].sort((a, b) =>
+  a.startTime.localeCompare(b.startTime),
+);
+const firstDate = sortedByTime[0]?.startTime.slice(0, 10) ?? "";
+const lastDate = sortedByTime[sortedByTime.length - 1]?.startTime.slice(0, 10) ?? "";
+const dayCount =
+  firstDate && lastDate
+    ? Math.round(
+        (new Date(lastDate).getTime() - new Date(firstDate).getTime()) /
+          86400000,
+      ) + 1
+    : 0;
+
+// Unique model count
+const modelSet = new Set<string>();
+for (const t of traces) {
+  for (const s of t.spans) {
+    if ("model" in s && (s as { model?: string }).model) {
+      modelSet.add((s as { model: string }).model);
+    }
+  }
+}
+
+// Running (in-flight) traces
+const runningCount = traces.filter((t) => t.status === "running").length;
+
+// Period comparison: split window in half, compare second half vs first half
+function periodDelta(metric: (t: (typeof traces)[number]) => number): number {
+  const mid = sortedByTime[Math.floor(sortedByTime.length / 2)]?.startTime ?? "";
+  let first = 0;
+  let second = 0;
+  for (const t of sortedByTime) {
+    if (t.startTime < mid) first += metric(t);
+    else second += metric(t);
+  }
+  if (first === 0) return 0;
+  return ((second - first) / first) * 100;
+}
+
+const successCount = traces.filter((t) => t.status === "success").length;
+
+// Feedback aggregation
+let feedbackUp = 0;
+let feedbackDown = 0;
+for (const t of traces) {
+  const fb = (t as { feedback?: { rating?: string } }).feedback;
+  if (fb?.rating === "up") feedbackUp++;
+  else if (fb?.rating === "down") feedbackDown++;
+}
+
+// Environment breakdown
+const envMap: Record<string, number> = {};
+for (const t of traces) {
+  const env = t.metadata?.environment ?? "unknown";
+  envMap[env] = (envMap[env] ?? 0) + 1;
+}
+
 export const stats = {
   totalTraces: traces.length,
   totalCost: traces.reduce((s, t) => s + t.totalCostUsd, 0),
@@ -27,7 +85,36 @@ export const stats = {
     (traces.filter((t) => t.status === "error").length / traces.length) * 100,
   p50: percentile(latencies, 50),
   p95: percentile(latencies, 95),
+  // success & feedback
+  successCount,
+  successRate: (successCount / traces.length) * 100,
+  feedbackUp,
+  feedbackDown,
+  feedbackTotal: feedbackUp + feedbackDown,
+  satisfactionRate:
+    feedbackUp + feedbackDown > 0
+      ? (feedbackUp / (feedbackUp + feedbackDown)) * 100
+      : 0,
+  // context
+  dayCount,
+  firstDate,
+  lastDate,
+  modelCount: modelSet.size,
+  runningCount,
+  completedCount: completedTraces.length,
+  // trends (second half vs first half of window)
+  tracesDelta: periodDelta(() => 1),
+  costDelta: periodDelta((t) => t.totalCostUsd),
+  tokensDelta: periodDelta((t) => t.totalTokens),
+  errorsDelta: periodDelta((t) => (t.status === "error" ? 1 : 0)),
 };
+
+// Environment distribution for category bar
+export function getEnvironmentBreakdown() {
+  return Object.entries(envMap)
+    .map(([label, value]) => ({ label, value }))
+    .sort((a, b) => b.value - a.value);
+}
 
 // Latency histogram - 500ms buckets
 export function getLatencyHistogram() {

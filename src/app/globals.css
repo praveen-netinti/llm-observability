@@ -201,14 +201,14 @@
   --color-neutral-alpha-10: var(--color-gray-alpha-10);
 
   /* Dynamic Primary Colors */
-  --color-primary-dark: var(--color-green-800);
-  --color-primary-darker: var(--color-green-700);
-  --color-primary-base: var(--color-green-500);
-  --color-primary-light: var(--color-green-100);
-  --color-primary-lighter: var(--color-green-50);
-  --color-primary-alpha-24: var(--color-green-alpha-24);
-  --color-primary-alpha-16: var(--color-green-alpha-16);
-  --color-primary-alpha-10: var(--color-green-alpha-10);
+  --color-primary-dark: var(--color-orange-800);
+  --color-primary-darker: var(--color-orange-700);
+  --color-primary-base: var(--color-orange-500);
+  --color-primary-light: var(--color-orange-100);
+  --color-primary-lighter: var(--color-orange-50);
+  --color-primary-alpha-24: var(--color-orange-alpha-24);
+  --color-primary-alpha-16: var(--color-orange-alpha-16);
+  --color-primary-alpha-10: var(--color-orange-alpha-10);
 
   /* Social Colors */
   --color-social-apple: #000;

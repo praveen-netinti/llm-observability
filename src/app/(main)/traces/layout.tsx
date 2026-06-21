@@ -454,7 +454,7 @@ export default function TracesLayout() {
   });
 
   return (
-    <div className='flex h-full flex-col lg:p-2 lg:pl-0 select-none'>
+    <div className='flex h-full flex-col select-none lg:p-2 lg:pl-0'>
       <ResizablePanelGroup
         orientation='horizontal'
         className='bg-bg-white-0 lg:border-stroke-soft-200 relative flex h-full flex-row lg:rounded-2xl lg:border'

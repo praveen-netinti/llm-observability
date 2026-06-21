@@ -50,7 +50,7 @@ import * as Select from "@/components/ui/select";
 import * as StatusBadge from "@/components/ui/status-badge";
 import * as Table from "@/components/ui/table";
 
-function IconUserBox(props: SVGProps<SVGSVGElement>) {
+export function IconUserBox(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       width='16'

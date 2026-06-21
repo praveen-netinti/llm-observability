@@ -114,7 +114,7 @@ const TableCell = React.forwardRef<
         // Hover
         "group-hover/row:bg-bg-weak-50",
         // Selected
-        "group-data-[selected=true]/row:bg-primary-alpha-10",
+        "group-data-[selected=true]/row:bg-primary-base/5",
 
         // Connected with previous selected row
         "group-data-[connected-top=true]/row:first:rounded-tl-none",

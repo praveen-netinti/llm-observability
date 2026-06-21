@@ -6,9 +6,23 @@ import { AnimatePresence, motion } from 'motion/react';
 import Image from 'next/image';
 
 export function SplashScreen({ children }: { children: React.ReactNode }) {
-  const [showSplash, setShowSplash] = React.useState(true);
+  // Start hidden to avoid a flash on repeat visits; decide in effect (client-only).
+  const [showSplash, setShowSplash] = React.useState(false);
+  const [ready, setReady] = React.useState(false);
 
   React.useEffect(() => {
+    const SEEN_KEY = 'neosigma-splash-seen';
+    const hasSeen =
+      typeof window !== 'undefined' && localStorage.getItem(SEEN_KEY) === 'true';
+
+    if (hasSeen) {
+      setReady(true);
+      return;
+    }
+
+    setShowSplash(true);
+    setReady(true);
+    localStorage.setItem(SEEN_KEY, 'true');
     const timer = setTimeout(() => setShowSplash(false), 2500);
     return () => clearTimeout(timer);
   }, []);
@@ -61,8 +75,8 @@ export function SplashScreen({ children }: { children: React.ReactNode }) {
 
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: showSplash ? 0 : 1 }}
-        transition={{ duration: 0.3, delay: 0.1 }}
+        animate={{ opacity: ready && !showSplash ? 1 : 0 }}
+        transition={{ duration: 0.3, delay: showSplash ? 0.1 : 0 }}
       >
         {children}
       </motion.div>

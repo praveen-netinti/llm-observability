@@ -454,7 +454,7 @@ export default function TracesLayout() {
   });
 
   return (
-    <div className='flex h-full flex-col lg:p-2 lg:pl-0'>
+    <div className='flex h-full flex-col lg:p-2 lg:pl-0 select-none'>
       <ResizablePanelGroup
         orientation='horizontal'
         className='bg-bg-white-0 lg:border-stroke-soft-200 relative flex h-full flex-row lg:rounded-2xl lg:border'
@@ -489,7 +489,7 @@ export default function TracesLayout() {
             </div>
 
             {/* Table Toolbar */}
-            <div className='flex h-11 w-full items-center gap-2 px-2.5'>
+            <div className='flex h-11 w-full items-center gap-1.5 px-2.5'>
               <Select.Root size='xxsmall' defaultValue='all-traces'>
                 <Select.Trigger className='w-fit'>
                   <Select.Value placeholder='Select view' />
@@ -548,29 +548,27 @@ export default function TracesLayout() {
                 </Input.Wrapper>
               </Input.Root>
 
-              <div className='ml-auto flex items-center gap-1.5'>
-                <Select.Root size='xxsmall' value={statusFilter} onValueChange={setStatusFilter}>
-                  <Select.Trigger className='w-fit gap-1'>
-                    <RiFilter3Line className='size-3.5' />
-                    <Select.Value placeholder='Status' />
-                  </Select.Trigger>
-                  <Select.Content align='end' className='w-35'>
-                    <Select.Item value='all'>All Status</Select.Item>
-                    <Select.Item value='success'>
-                      {/* <RiCheckboxCircleFill className='text-success-base inline size-4' /> */}
-                      Success
-                    </Select.Item>
-                    <Select.Item value='error'>
-                      {/* <RiCloseCircleFill className='text-error-base inline size-4' /> */}
-                      Error
-                    </Select.Item>
-                    <Select.Item value='running'>
-                      {/* <RiLoader4Line className='text-warning-base inline size-4' /> */}
-                      Running
-                    </Select.Item>
-                  </Select.Content>
-                </Select.Root>
-              </div>
+              <Select.Root size='xxsmall' value={statusFilter} onValueChange={setStatusFilter}>
+                <Select.Trigger className='ml-auto w-fit gap-1'>
+                  <RiFilter3Line className='size-3.5' />
+                  <Select.Value placeholder='Status' />
+                </Select.Trigger>
+                <Select.Content align='end' className='w-35'>
+                  <Select.Item value='all'>All Status</Select.Item>
+                  <Select.Item value='success'>
+                    {/* <RiCheckboxCircleFill className='text-success-base inline size-4' /> */}
+                    Success
+                  </Select.Item>
+                  <Select.Item value='error'>
+                    {/* <RiCloseCircleFill className='text-error-base inline size-4' /> */}
+                    Error
+                  </Select.Item>
+                  <Select.Item value='running'>
+                    {/* <RiLoader4Line className='text-warning-base inline size-4' /> */}
+                    Running
+                  </Select.Item>
+                </Select.Content>
+              </Select.Root>
             </div>
 
             <div className='no-scrollbar relative flex-1 overflow-auto p-2.5'>

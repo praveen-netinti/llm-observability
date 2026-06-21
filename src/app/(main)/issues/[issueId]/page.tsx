@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useMemo, useState } from "react";
+import React, { use, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useIssues } from "@/contexts/issues-context";
@@ -27,22 +27,7 @@ import {
   ASSIGNEE_OPTIONS,
   PROJECT_OPTIONS,
 } from "@/lib/issues-store";
-
-const STATUS_CONFIG: Record<IssueStatus, { icon: string; color: string }> = {
-  backlog: { icon: "◌", color: "text-text-soft-400" },
-  todo: { icon: "○", color: "text-text-sub-600" },
-  "in-progress": { icon: "◐", color: "text-warning-base" },
-  done: { icon: "●", color: "text-success-base" },
-  cancelled: { icon: "⊘", color: "text-text-disabled-300" },
-};
-
-const PRIORITY_CONFIG: Record<IssuePriority, { icon: string; color: string }> = {
-  "no-priority": { icon: "—", color: "text-text-soft-400" },
-  urgent: { icon: "⚡", color: "text-error-base" },
-  high: { icon: "↑", color: "text-orange-500" },
-  medium: { icon: "→", color: "text-warning-base" },
-  low: { icon: "↓", color: "text-information-base" },
-};
+import { STATUS_CONFIG, PRIORITY_CONFIG, IconNoAssignee } from "@/components/issues/issue-config";
 
 function copyToClipboard(text: string) {
   navigator.clipboard.writeText(text);
@@ -166,14 +151,14 @@ export default function IssueDetailPage({ params }: { params: Promise<{ issueId:
                 >
                   <Select.Trigger className="w-full">
                     <span className={cn(STATUS_CONFIG[issue.status].color)}>
-                      {STATUS_CONFIG[issue.status].icon}
+                      {React.createElement(STATUS_CONFIG[issue.status].icon, { className: "size-4" })}
                     </span>
                     <Select.Value />
                   </Select.Trigger>
                   <Select.Content>
                     {STATUS_OPTIONS.map((s) => (
                       <Select.Item key={s.value} value={s.value}>
-                        <span className={STATUS_CONFIG[s.value].color}>{STATUS_CONFIG[s.value].icon}</span>{" "}
+                        <span className={STATUS_CONFIG[s.value].color}>{React.createElement(STATUS_CONFIG[s.value].icon, { className: "size-4" })}</span>{" "}
                         {s.label}
                       </Select.Item>
                     ))}
@@ -190,14 +175,14 @@ export default function IssueDetailPage({ params }: { params: Promise<{ issueId:
                 >
                   <Select.Trigger className="w-full">
                     <span className={cn(PRIORITY_CONFIG[issue.priority].color)}>
-                      {PRIORITY_CONFIG[issue.priority].icon}
+                      {React.createElement(PRIORITY_CONFIG[issue.priority].icon, { className: "size-4" })}
                     </span>
                     <Select.Value />
                   </Select.Trigger>
                   <Select.Content>
                     {PRIORITY_OPTIONS.map((p) => (
                       <Select.Item key={p.value} value={p.value}>
-                        <span className={PRIORITY_CONFIG[p.value].color}>{PRIORITY_CONFIG[p.value].icon}</span>{" "}
+                        <span className={PRIORITY_CONFIG[p.value].color}>{React.createElement(PRIORITY_CONFIG[p.value].icon, { className: "size-4" })}</span>{" "}
                         {p.label}
                       </Select.Item>
                     ))}

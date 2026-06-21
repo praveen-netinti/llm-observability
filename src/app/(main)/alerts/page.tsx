@@ -2,7 +2,9 @@
 
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSidebar } from "@/contexts/sidebar-context";
+import { useIssues } from "@/contexts/issues-context";
 import {
   RiAlarmWarningLine,
   RiArrowRightSLine,
@@ -122,6 +124,8 @@ function SlackCard({ blocks }: { blocks: SlackBlock[] }) {
 
 export default function AlertsPage() {
   const { onMenuClick } = useSidebar();
+  const { addIssue } = useIssues();
+  const router = useRouter();
   const traceIds = Object.keys(groupedByTrace);
   const [selectedTrace, setSelectedTrace] = useState(traceIds[0]);
 
@@ -159,26 +163,38 @@ export default function AlertsPage() {
         {/* Body - split */}
         <div className="flex flex-1 overflow-hidden">
           {/* Left: trace list */}
-          <div className="w-72 shrink-0 border-r border-stroke-soft-200 overflow-auto">
-            <div className="p-2">
-              <h3 className="text-label-xs text-text-soft-400 px-2 py-1 uppercase">Alert Traces</h3>
+          <div className="w-64 shrink-0 border-r border-stroke-soft-200 overflow-auto no-scrollbar">
+            <div className="p-1.5">
               {traceIds.map((trId) => {
                 const msgs = groupedByTrace[trId];
                 const alertMsg = msgs.find((m) => m.lifecycle === "alert");
                 const headerBlock = alertMsg?.blocks.find((b) => b.type === "header") as { text: { text: string } } | undefined;
                 const title = headerBlock?.text.text.replace(/:[a-z_]+:/g, "").trim() ?? trId;
+                const latestStep = msgs[msgs.length - 1]?.lifecycle;
+                const isActive = selectedTrace === trId;
 
                 return (
                   <button
                     key={trId}
                     onClick={() => setSelectedTrace(trId)}
                     className={cn(
-                      "w-full rounded-lg px-3 py-2 text-left transition-colors",
-                      selectedTrace === trId ? "bg-bg-weak-50" : "hover:bg-bg-weak-50",
+                      "w-full rounded-lg px-3 py-2.5 text-left transition-colors border-l-2",
+                      isActive
+                        ? "bg-bg-weak-50 border-l-primary-base"
+                        : "border-l-transparent hover:bg-bg-weak-50",
                     )}
                   >
                     <p className="text-label-sm text-text-strong-950 line-clamp-1 m-0">{title}</p>
-                    <p className="text-paragraph-xs text-text-soft-400 m-0 mt-0.5 font-mono">{trId}</p>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <span className="text-[10px] font-mono text-text-soft-400">{trId.replace("trace_", "")}</span>
+                      <span className="text-text-disabled-300">·</span>
+                      <span className={cn(
+                        "text-[10px] font-medium capitalize",
+                        latestStep === "resolved" ? "text-success-base" :
+                        latestStep === "triage" ? "text-warning-base" :
+                        "text-text-soft-400"
+                      )}>{latestStep}</span>
+                    </div>
                   </button>
                 );
               })}
@@ -227,14 +243,38 @@ export default function AlertsPage() {
               ))}
             </div>
 
-            {/* Link to trace */}
-            <div className="mt-6">
-              <Link
-                href={`/traces/${selectedTrace}`}
-                className="inline-flex items-center gap-1.5 text-paragraph-sm text-primary-base hover:underline"
-              >
-                View trace →
+            {/* Quick actions */}
+            <div className="mt-6 flex items-center gap-2 border-t border-stroke-soft-200 pt-4">
+              <Link href={`/traces/${selectedTrace}`}>
+                <Button.Root variant="neutral" mode="stroke" size="small">
+                  View trace
+                </Button.Root>
               </Link>
+              <Button.Root
+                variant="primary"
+                mode="filled"
+                size="small"
+                onClick={() => {
+                  const alertMsg = messages.find((m) => m.lifecycle === "alert");
+                  const headerBlock = alertMsg?.blocks.find((b) => b.type === "header") as { text: { text: string } } | undefined;
+                  const sectionBlock = alertMsg?.blocks.find((b) => b.type === "section") as { text?: { text: string } } | undefined;
+                  const title = headerBlock?.text.text.replace(/:[a-z_]+:/g, "").trim() ?? "Alert issue";
+                  const desc = sectionBlock?.text?.text ?? "";
+                  addIssue({
+                    title,
+                    description: desc,
+                    status: "todo",
+                    priority: "high",
+                    assignee: null,
+                    labels: ["bug"],
+                    project: null,
+                    traceId: selectedTrace,
+                  });
+                  router.push("/issues/all");
+                }}
+              >
+                Create issue
+              </Button.Root>
             </div>
           </div>
         </div>

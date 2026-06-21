@@ -43,7 +43,7 @@ export default function IssuesLayout({ children }: { children: ReactNode }) {
     grouping: "status",
     showEmptyGroups: false,
     nestedSubIssues: false,
-    visibleProperties: ["id", "status", "priority", "assignee", "created"],
+    visibleProperties: ["id", "status", "priority", "assignee", "trace-id", "created"],
   });
 
   const currentTab = pathname.includes("/active")

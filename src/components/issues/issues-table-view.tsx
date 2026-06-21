@@ -425,10 +425,20 @@ export function IssuesTableView({ filter }: Props) {
                           </Table.Cell>
                         )}
 
+                        {/* Trace ID */}
+                        {vis.includes("trace-id") && issue.traceId && (
+                          <Table.Cell className='h-11 w-10 px-0 last:rounded-r-lg'>
+                            <span className='text-text-soft-400 font-mono text-[11px]'>
+                              {issue.traceId.replace("trace_", "")}
+                            </span>
+                          </Table.Cell>
+                        )}
+
                         {/* Title */}
                         <Table.Cell className='h-11 flex-1 px-0 last:rounded-r-lg'>
                           <span className='text-text-strong-950 line-clamp-1'>{issue.title}</span>
                         </Table.Cell>
+
 
                         {/* Assignee */}
                         {vis.includes("assignee") && (

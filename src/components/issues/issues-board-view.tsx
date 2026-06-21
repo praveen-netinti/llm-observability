@@ -153,6 +153,11 @@ export function IssuesBoardView({ filter }: Props) {
                           <span className='text-paragraph-xs text-text-soft-400 font-mono'>
                             {item.id}
                           </span>
+                          {item.traceId && (
+                            <span className='text-text-disabled-300 text-[10px] font-mono'>
+                              {item.traceId.replace("trace_", "")}
+                            </span>
+                          )}
                         </div>
                         <div className='mt-1 flex items-start gap-1.5'>
                           <span className={cn("mt-1 text-xs", STATUS_CONFIG[item.status].color)}>

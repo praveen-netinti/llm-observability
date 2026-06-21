@@ -93,20 +93,19 @@ export default function IssueDetailPage({ params }: { params: Promise<{ issueId:
         <div className='flex flex-1 overflow-hidden'>
           {/* Left: content */}
           <div className='flex-1 overflow-auto p-6'>
-            {/* Title */}
-            <h1 className='text-title-h6 text-text-strong-950 mb-2'>{issue.title}</h1>
+            <h1 className='text-label-lg text-text-strong-950 mb-4'>{issue.title}</h1>
 
             {/* Description */}
-            <div className='text-paragraph-sm text-text-sub-600 border-stroke-soft-200 mb-8 rounded-lg border p-4'>
-              {issue.description ? renderMrkdwn(issue.description) : <span className="text-text-soft-400">No description provided.</span>}
+            <div className='text-paragraph-sm text-text-sub-600 leading-relaxed'>
+              {issue.description ? renderMrkdwn(issue.description) : <span className='text-text-soft-400'>No description.</span>}
             </div>
 
             {/* Activity */}
-            <div className='border-stroke-soft-200 border-t pt-4'>
-              <h3 className='text-label-sm text-text-strong-950 mb-3'>Activity</h3>
+            <div className='border-stroke-soft-200 mt-8 border-t pt-4'>
+              <h3 className='text-label-xs text-text-soft-400 mb-3 uppercase'>Activity</h3>
               <div className='flex gap-2'>
                 <input
-                  className='border-stroke-soft-200 bg-bg-white-0 text-paragraph-sm text-text-strong-950 placeholder:text-text-soft-400 focus:shadow-custom-input-active flex-1 rounded-lg border px-3 py-2 outline-none'
+                  className='shadow-custom-input text-paragraph-sm text-text-strong-950 placeholder:text-text-soft-400 focus:shadow-custom-input-active flex-1 rounded-lg px-3 py-2 outline-none'
                   placeholder='Leave a comment...'
                   value={activity}
                   onChange={(e) => setActivity(e.target.value)}
@@ -309,3 +308,5 @@ function PropertyRow({ label, children }: { label: string; children: React.React
     </div>
   );
 }
+
+

@@ -27,7 +27,7 @@ const DropdownMenuContent = React.forwardRef<
       sideOffset={sideOffset}
       className={cn(
         "bg-bg-white-0 shadow-custom-lg dark:border border-faded-lighter z-50 w-75 overflow-hidden rounded-2xl py-2",
-        "flex flex-col",
+        "flex flex-col select-none",
         // origin
         "data-[side=bottom]:origin-top data-[side=left]:origin-right data-[side=right]:origin-left data-[side=top]:origin-bottom",
         // animation

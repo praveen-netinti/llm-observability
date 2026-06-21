@@ -1,13 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { useSidebar } from "@/contexts/sidebar-context";
-import { RiArrowDownSFill, RiArrowUpSFill, RiLayoutLeft2Line, RiSpeedLine, RiThumbDownLine, RiThumbUpLine } from "@remixicon/react";
+import { RiArrowDownSFill, RiArrowUpSFill, RiThumbDownLine, RiThumbUpLine } from "@remixicon/react";
 import { format } from "date-fns";
 import {
   Area,
   AreaChart,
   CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
   Tooltip as RechartsTooltip,
   ReferenceLine,
   ResponsiveContainer,
@@ -104,7 +106,6 @@ const activeDotProps = {
     "stroke-stroke-white-0 filter-[drop-shadow(0_6px_10px_#0e121b0f)_drop-shadow(0_2px_4px_#0e121b08)]",
 };
 
-// -- Stat Tiles (bordered cards with trend indicator) --
 function StatTiles() {
   const tiles: {
     title: string;
@@ -158,9 +159,7 @@ function StatTiles() {
           key={tile.title}
           className={cn(
             "flex flex-col rounded-xl border p-3 transition-colors",
-            idx === 0
-              ? "border-stroke-soft-200 bg-bg-weak-50"
-              : "border-stroke-soft-200/60 bg-bg-white-0 hover:border-stroke-soft-200 hover:bg-bg-weak-50",
+            "border-stroke-soft-200 bg-bg-white-0 hover:border-stroke-soft-200 hover:bg-bg-weak-50",
           )}
         >
           <span className='text-label-xs text-text-soft-400'>{tile.title}</span>
@@ -171,9 +170,7 @@ function StatTiles() {
             {tile.delta && Math.abs(tile.delta.value) >= 0.1 ? (
               <>
                 <DeltaIndicator value={tile.delta.value} goodWhenDown={tile.delta.goodWhenDown} />
-                <span className='text-label-xs text-text-soft-400 whitespace-nowrap'>
-                  vs prev
-                </span>
+                <span className='text-label-xs text-text-soft-400 whitespace-nowrap'>vs prev</span>
               </>
             ) : (
               <span className='text-label-xs text-text-soft-400 whitespace-nowrap'>
@@ -329,7 +326,6 @@ function StatCard({
   );
 }
 
-// -- Stat Summary (analytics-summary style, inline row with dividers) --
 function StatSummary() {
   const [latencyView, setLatencyView] = React.useState<"p50" | "p95">("p50");
 
@@ -421,7 +417,6 @@ function StatSummaryDivider() {
   );
 }
 
-// -- Latency Distribution --
 function WidgetLatencyDistribution() {
   if (histogram.length === 0) return <EmptyChart title='Latency Distribution' />;
 
@@ -450,7 +445,7 @@ function WidgetLatencyDistribution() {
         </Button.Root>
       </ChartHeader>
 
-      <ResponsiveContainer width='100%' height={192} className="pl-3 pr-1">
+      <ResponsiveContainer width='100%' height={192} className='pr-1 pl-3'>
         <AreaChart
           data={histogram}
           margin={{ top: 6, right: 0, left: 0, bottom: 6 }}
@@ -524,7 +519,6 @@ function WidgetLatencyDistribution() {
   );
 }
 
-// -- Segmented tracker bar (ProgressChart style, CSS-only) --
 function Tracker({ value }: { value: number }) {
   return (
     <div className='relative h-6 w-full overflow-hidden'>
@@ -553,7 +547,6 @@ function Tracker({ value }: { value: number }) {
   );
 }
 
-// -- Stacked category bar (part-to-whole) --
 const CATEGORY_COLORS = [
   "var(--color-primary-base)",
   "var(--color-orange-400)",
@@ -562,14 +555,10 @@ const CATEGORY_COLORS = [
   "var(--color-information-base)",
 ];
 
-function CategoryBar({
-  data,
-}: {
-  data: { label: string; value: number; sub?: string }[];
-}) {
+function CategoryBar({ data }: { data: { label: string; value: number; sub?: string }[] }) {
   const total = data.reduce((s, d) => s + d.value, 0) || 1;
   return (
-    <div className='flex flex-col gap-4 px-6 pb-6 pt-2'>
+    <div className='flex flex-col gap-4 px-6 pt-2 pb-6'>
       <div className='flex h-3 w-full gap-[3px] overflow-hidden'>
         {data.map((d, i) => (
           <div
@@ -589,13 +578,9 @@ function CategoryBar({
               className='size-2 shrink-0 rounded-full'
               style={{ backgroundColor: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }}
             />
-            <span className='text-label-sm text-text-sub-600 flex-1 truncate'>
-              {d.label}
-            </span>
+            <span className='text-label-sm text-text-sub-600 flex-1 truncate'>{d.label}</span>
             {d.sub && (
-              <span className='text-label-xs text-text-soft-400 tabular-nums'>
-                {d.sub}
-              </span>
+              <span className='text-label-xs text-text-soft-400 tabular-nums'>{d.sub}</span>
             )}
             <span className='text-label-sm text-text-strong-950 w-12 text-right tabular-nums'>
               {((d.value / total) * 100).toFixed(0)}%
@@ -607,9 +592,14 @@ function CategoryBar({
   );
 }
 
-// -- Cost by Model --
 function WidgetCostByModel() {
   if (costByModel.length === 0) return <EmptyChart title='Cost by Model' />;
+
+  const total = stats.totalCost || 1;
+  const pieData = costByModel.map((item, i) => ({
+    ...item,
+    color: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
+  }));
 
   return (
     <ChartCard>
@@ -621,21 +611,66 @@ function WidgetCostByModel() {
         description='total spend'
       />
 
-      <div>
+      <div className='flex items-center gap-6 px-6 pb-6'>
+        {/* Donut */}
+        <div className='relative shrink-0' style={{ width: 132, height: 132 }}>
+          <PieChart width={132} height={132}>
+            <Pie
+              data={pieData}
+              dataKey='cost'
+              nameKey='model'
+              cx='50%'
+              cy='50%'
+              innerRadius={44}
+              outerRadius={64}
+              paddingAngle={2}
+              cornerRadius={3}
+              startAngle={90}
+              endAngle={450}
+              strokeWidth={0}
+            >
+              {pieData.map((d) => (
+                <Cell key={d.model} fill={d.color} />
+              ))}
+            </Pie>
+            <RechartsTooltip
+              cursor={false}
+              content={
+                <ChartTooltip
+                  valueFormatter={(v) => `$${v.toFixed(3)} (${((v / total) * 100).toFixed(0)}%)`}
+                />
+              }
+            />
+          </PieChart>
+          {/* Center label */}
+          <div className='pointer-events-none absolute inset-0 flex flex-col items-center justify-center'>
+            <span className='text-label-xs text-text-soft-400'>Total</span>
+            <span className='text-label-md text-text-strong-950 tabular-nums'>
+              ${stats.totalCost.toFixed(2)}
+            </span>
+          </div>
+        </div>
 
+        {/* Legend */}
+        <div className='flex flex-1 flex-col gap-2.5'>
+          {pieData.map((d) => (
+            <div key={d.model} className='flex items-center gap-2'>
+              <span className='size-2 shrink-0 rounded-full' style={{ backgroundColor: d.color }} />
+              <span className='text-label-sm text-text-sub-600 flex-1 truncate'>{d.model}</span>
+              <span className='text-label-sm text-text-strong-950 tabular-nums'>
+                ${d.cost.toFixed(3)}
+              </span>
+              <span className='text-label-xs text-text-soft-400 w-9 text-right tabular-nums'>
+                {((d.cost / total) * 100).toFixed(0)}%
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
-      <CategoryBar
-        data={costByModel.map((item) => ({
-          label: item.model,
-          value: item.cost,
-          sub: `$${item.cost.toFixed(3)} · ${item.tokens.toLocaleString()} tok`,
-        }))}
-      />
     </ChartCard>
   );
 }
 
-// -- Reliability & Feedback (tracker-based) --
 function WidgetReliability() {
   return (
     <ChartCard>
@@ -666,9 +701,7 @@ function WidgetReliability() {
         {stats.feedbackTotal > 0 && (
           <div className='flex flex-col gap-1.5'>
             <div className='flex items-center justify-between'>
-              <span className='text-label-sm text-text-sub-600'>
-                User satisfaction
-              </span>
+              <span className='text-label-sm text-text-sub-600'>User satisfaction</span>
               <span className='text-label-sm text-text-strong-950 tabular-nums'>
                 {stats.satisfactionRate.toFixed(0)}%
               </span>
@@ -689,7 +722,6 @@ function WidgetReliability() {
   );
 }
 
-// -- Traffic by Environment (category bar) --
 function WidgetEnvironments() {
   if (envBreakdown.length === 0) return <EmptyChart title='Traffic by Environment' />;
 
@@ -714,7 +746,6 @@ function WidgetEnvironments() {
   );
 }
 
-// -- Error Rate Over Time --
 function WidgetErrorRate() {
   if (errorOverTime.length === 0) return <EmptyChart title='Error Rate Over Time' />;
 
@@ -727,7 +758,7 @@ function WidgetErrorRate() {
         badgeColor='red'
         description='of all traces'
       />
-      <ResponsiveContainer width='100%' height={192} className='pl-2 pr-3'>
+      <ResponsiveContainer width='100%' height={192} className='pr-3 pl-2'>
         <AreaChart
           data={errorOverTime}
           margin={{ top: 6, right: 0, left: 0, bottom: 6 }}
@@ -776,7 +807,6 @@ function WidgetErrorRate() {
   );
 }
 
-// -- Token Usage Over Time --
 function WidgetTokenUsage() {
   if (tokenOverTime.length === 0) return <EmptyChart title='Token Usage Over Time' />;
 
@@ -796,21 +826,21 @@ function WidgetTokenUsage() {
           <span className='flex items-center gap-1'>
             <span
               className='inline-block size-2 rounded-full'
-              style={{ backgroundColor: "var(--color-primary-base)" }}
+              style={{ backgroundColor: "var(--color-green-400)" }}
             />
             Prompt
           </span>
           <span className='flex items-center gap-1'>
             <span
               className='inline-block size-2 rounded-full'
-              style={{ backgroundColor: "var(--color-orange-300)" }}
+              style={{ backgroundColor: "var(--color-green-700)" }}
             />
             Completion
           </span>
         </div>
       </ChartHeader>
 
-      <ResponsiveContainer width='100%' height={192} className="pl-4 pr-4">
+      <ResponsiveContainer width='100%' height={192} className='pr-4 pl-4'>
         <AreaChart
           data={tokenOverTime}
           margin={{ top: 6, right: 0, left: 0, bottom: 6 }}
@@ -849,18 +879,18 @@ function WidgetTokenUsage() {
           <Area
             type='monotone'
             dataKey='prompt'
-            stroke='var(--color-primary-base)'
+            stroke='var(--color-green-400)'
             strokeWidth={2}
-            fill='var(--color-primary-base)'
+            fill='var(--color-green-400)'
             fillOpacity={0.08}
             activeDot={activeDotProps}
           />
           <Area
             type='monotone'
             dataKey='completion'
-            stroke='var(--color-orange-300)'
+            stroke='var(--color-green-700)'
             strokeWidth={2}
-            fill='var(--color-orange-300)'
+            fill='var(--color-green-700)'
             fillOpacity={0.08}
             activeDot={activeDotProps}
           />
@@ -870,10 +900,9 @@ function WidgetTokenUsage() {
   );
 }
 
-// -- Shared --
 function ChartCard({ children }: { children: React.ReactNode }) {
   return (
-    <div className='border-faded-lighter flex w-full flex-col gap-5 rounded-3xl border'>
+    <div className='border-faded-lighter flex w-full flex-col gap-5 rounded-2xl border'>
       {children}
     </div>
   );
@@ -929,7 +958,6 @@ function formatMs(ms: number): string {
   return `${Math.round(ms)}ms`;
 }
 
-// -- Main Page --
 export default function MainPage() {
   return (
     <div className='flex h-full flex-col lg:p-2 lg:pl-0'>
@@ -951,13 +979,13 @@ export default function MainPage() {
           <div className='flex flex-col gap-4 lg:flex-row lg:items-start'>
             <div className='flex flex-1 flex-col gap-4'>
               <WidgetLatencyDistribution />
-              <WidgetErrorRate />
               <WidgetReliability />
+              <WidgetErrorRate />
             </div>
             <div className='flex flex-1 flex-col gap-4'>
               <WidgetCostByModel />
-              <WidgetTokenUsage />
               <WidgetEnvironments />
+              <WidgetTokenUsage />
             </div>
           </div>
         </div>

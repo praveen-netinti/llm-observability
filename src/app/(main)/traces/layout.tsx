@@ -12,9 +12,12 @@ import {
   RiCheckboxCircleFill,
   RiCloseCircleFill,
   RiFilter3Line,
+  RiFlaskLine,
+  RiGitMergeLine,
   RiLayoutLeft2Line,
   RiLayoutRight2Line,
   RiLoader4Line,
+  RiNotificationOffLine,
   RiSearchLine,
 } from "@remixicon/react";
 import {
@@ -33,6 +36,12 @@ import { cn } from "@/utils";
 
 import { notification } from "@/hooks/use-notification";
 
+import {
+  SlackBlocks,
+  type SlackActionContext,
+  type SlackBlock,
+} from "@/components/slack/slack-card";
+import { SlackLogo } from "@/components/slack/slack-logo";
 import { TimeRangeFilter } from "@/components/traces/time-range-filter";
 import { TraceDetailPanel } from "@/components/traces/trace-detail-panel";
 import * as Badge from "@/components/ui/badge";
@@ -40,6 +49,7 @@ import * as Breadcrumb from "@/components/ui/breadcrumb";
 import * as Button from "@/components/ui/button";
 import * as Checkbox from "@/components/ui/checkbox";
 import * as Input from "@/components/ui/input";
+import { plainText } from "@/components/ui/markdown";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import {
   SegmentedControl,
@@ -74,6 +84,75 @@ export function IconUserBox(props: SVGProps<SVGSVGElement>) {
 
 // Show only root spans (one per trace)
 const traceRows = flatSpans.filter((s) => s.parentId === null);
+
+/**
+ * Synthesize a Slack-style alert card for an error trace that has no authored
+ * card in slack-cards.json, so the "Open" affordance stays consistent.
+ */
+function buildFallbackBlocks(trace: FlatSpan | undefined, traceId: string): SlackBlock[] {
+  const blocks: SlackBlock[] = [
+    {
+      type: "header",
+      text: {
+        type: "plain_text",
+        text: `:rotating_light: Trace failed — ${trace?.traceName ?? traceId}`,
+        emoji: true,
+      },
+    },
+    {
+      type: "context",
+      elements: [
+        { type: "mrkdwn", text: "*Status:* Needs attention" },
+        { type: "mrkdwn", text: "Posted just now" },
+      ],
+    },
+  ];
+
+  if (trace?.error) {
+    blocks.push({
+      type: "section",
+      text: { type: "mrkdwn", text: `This run aborted with \`${trace.error}\` and never completed.` },
+    });
+  }
+
+  const fields: { type: "mrkdwn"; text: string }[] = [
+    { type: "mrkdwn", text: "*Severity:*\n:red_circle: High" },
+  ];
+  if (trace?.traceEnvironment) {
+    fields.push({ type: "mrkdwn", text: `*Environment:*\n${trace.traceEnvironment}` });
+  }
+  if (trace?.model) fields.push({ type: "mrkdwn", text: `*Model:*\n${trace.model}` });
+  if (trace?.traceTotalCostUsd) {
+    fields.push({ type: "mrkdwn", text: `*Cost so far:*\n$${trace.traceTotalCostUsd.toFixed(4)}` });
+  }
+  blocks.push({ type: "section", fields });
+
+  blocks.push({
+    type: "actions",
+    elements: [
+      {
+        type: "button",
+        text: { type: "plain_text", text: "View Trace", emoji: true },
+        url: `https://app.example.com/traces/${traceId}`,
+        action_id: "view_trace",
+      },
+      {
+        type: "button",
+        text: { type: "plain_text", text: "Create issue", emoji: true },
+        style: "primary",
+        action_id: "create_issue",
+      },
+      {
+        type: "button",
+        text: { type: "plain_text", text: "Mute this alert", emoji: true },
+        style: "danger",
+        action_id: "mute_alert",
+      },
+    ],
+  });
+
+  return blocks;
+}
 
 function formatLatency(ms: number | null): string {
   if (ms === null) return "";
@@ -179,31 +258,50 @@ export default function TracesLayout() {
   const showSlackAlert = (traceId: string) => {
     const card = slackCards.messages.find((m) => m.traceId === traceId && m.lifecycle === "alert");
     const trace = traceRows.find((r) => r.traceId === traceId);
-    const headerBlock = card?.blocks.find((b) => b.type === "header") as
-      | { text: { text: string } }
-      | undefined;
-    const sectionBlock = card?.blocks.find((b) => b.type === "section") as
-      | { text?: { text: string } }
-      | undefined;
-    const title =
-      headerBlock?.text?.text?.replace(/:[a-z_]+:/g, "🚨 ").trim() ??
-      `Trace failed — ${trace?.traceName ?? traceId}`;
-    const body = sectionBlock?.text?.text ?? trace?.error ?? "An error occurred in this trace.";
 
-    notification({
+    const blocks = (card?.blocks as unknown as SlackBlock[]) ?? buildFallbackBlocks(trace, traceId);
+    const channel = card?.channel ?? "#llm-ops";
+
+    // Derive a clean title/body for any issue created from this alert.
+    const headerBlock = blocks.find((b) => b.type === "header") as
+      | Extract<SlackBlock, { type: "header" }>
+      | undefined;
+    const sectionBlock = blocks.find((b) => b.type === "section" && "text" in b && b.text) as
+      | Extract<SlackBlock, { type: "section" }>
+      | undefined;
+    const issueTitle = headerBlock
+      ? plainText(headerBlock.text.text).replace(/^[^\w]+/, "").trim()
+      : `Trace failed — ${trace?.traceName ?? traceId}`;
+    const issueBody = sectionBlock?.text?.text ?? trace?.error ?? "An error occurred in this trace.";
+
+    const { dismiss } = notification({
+      id: `slack-${traceId}`,
       status: "error",
       variant: "stroke",
-      title,
+      icon: SlackLogo,
+      iconClassName: "size-5",
+      title: (
+        <div className='flex items-center gap-1.5'>
+          <span className='text-text-strong-950 text-label-sm font-semibold'>Slack</span>
+          <span className='bg-bg-soft-200 size-1 rounded-full' />
+          <span className='text-text-soft-400 font-mono text-[11px]'>{channel}</span>
+          <span className='bg-success-base ml-1 size-1.5 animate-pulse rounded-full' />
+        </div>
+      ),
       description: (
-        <div className='flex flex-col gap-2'>
-          <p className='text-paragraph-xs m-0'>{body.replace(/\*/g, "").replace(/`/g, "")}</p>
-          <div className='mt-1 flex gap-2'>
-            <button
-              className='bg-primary-base text-static-white hover:bg-primary-darker rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors'
-              onClick={() => {
+        <SlackBlocks
+          blocks={blocks}
+          density='compact'
+          onAction={(actionId, ctx: SlackActionContext) => {
+            switch (actionId) {
+              case "view_trace":
+                router.push(`/traces/${traceId}`);
+                dismiss();
+                break;
+              case "create_issue":
                 addIssue({
-                  title: title.replace("🚨 ", ""),
-                  description: body.replace(/\*/g, "").replace(/`/g, ""),
+                  title: issueTitle,
+                  description: issueBody,
                   status: "todo",
                   priority: "high",
                   assignee: null,
@@ -211,21 +309,68 @@ export default function TracesLayout() {
                   project: null,
                   traceId,
                 });
+                notification({
+                  status: "success",
+                  variant: "stroke",
+                  title: "Issue created",
+                  description: "A new issue was opened from this alert.",
+                  duration: 4000,
+                });
                 router.push("/issues");
-              }}
-            >
-              Create issue
-            </button>
-            <button
-              className='border-stroke-soft-200 bg-bg-white-0 text-text-sub-600 hover:bg-bg-weak-50 rounded-md border px-2.5 py-1 text-[11px] font-medium transition-colors'
-              onClick={() => router.push(`/traces/${traceId}`)}
-            >
-              View Trace
-            </button>
-          </div>
-        </div>
+                dismiss();
+                break;
+              case "view_pr":
+                if (ctx.url) window.open(ctx.url, "_blank", "noopener,noreferrer");
+                break;
+              case "mute_alert":
+                notification({
+                  status: "information",
+                  variant: "stroke",
+                  icon: RiNotificationOffLine,
+                  title: "Alert muted",
+                  description: `Notifications paused for ${trace?.traceName ?? traceId}.`,
+                  duration: 4000,
+                });
+                dismiss();
+                break;
+              case "approve_merge":
+                notification({
+                  status: "success",
+                  variant: "stroke",
+                  icon: RiGitMergeLine,
+                  title: "Merge approved",
+                  description: "The fix has been queued to merge.",
+                  duration: 4000,
+                });
+                dismiss();
+                break;
+              case "add_to_evalset":
+                notification({
+                  status: "feature",
+                  variant: "stroke",
+                  icon: RiFlaskLine,
+                  title: "Added to eval set",
+                  description: "This run was added to the evaluation set.",
+                  duration: 4000,
+                });
+                dismiss();
+                break;
+              case "merge_strategy":
+                notification({
+                  status: "information",
+                  variant: "stroke",
+                  title: "Merge strategy set",
+                  description: `Strategy: ${ctx.label}.`,
+                  duration: 3000,
+                });
+                break;
+              default:
+                break;
+            }
+          }}
+        />
       ),
-      duration: 15000,
+      duration: 20000,
     });
   };
 

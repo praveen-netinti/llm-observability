@@ -29,13 +29,13 @@ import {
   type IssuePriority,
   type IssueStatus,
 } from "@/lib/issues-store";
-import { renderMrkdwn } from "@/lib/render-mrkdwn";
 
 import { PRIORITY_CONFIG, STATUS_CONFIG } from "@/components/issues/issue-config";
 import * as Accordion from "@/components/ui/accordion";
 import * as Breadcrumb from "@/components/ui/breadcrumb";
 import * as Button from "@/components/ui/button";
 import * as ButtonGroup from "@/components/ui/button-group";
+import { Markdown } from "@/components/ui/markdown";
 import * as Select from "@/components/ui/select";
 import * as Tooltip from "@/components/ui/tooltip";
 
@@ -242,7 +242,7 @@ export default function IssueDetailPage({ params }: { params: Promise<{ issueId:
 
               <div className='text-paragraph-sm text-text-strong-950 leading-relaxed'>
                 {issue.description ? (
-                  renderMrkdwn(issue.description)
+                  <Markdown>{issue.description}</Markdown>
                 ) : (
                   <span className='text-text-soft-400'>No description.</span>
                 )}

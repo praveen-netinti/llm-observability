@@ -7,18 +7,26 @@ import { useSidebar } from "@/contexts/sidebar-context";
 import { useIssues } from "@/contexts/issues-context";
 import {
   RiArrowRightSLine,
+  RiFlaskLine,
+  RiGitMergeLine,
   RiLayoutLeft2Line,
+  RiNotificationOffLine,
 } from "@remixicon/react";
 import { cn } from "@/utils";
 
+import { notification } from "@/hooks/use-notification";
+
 import slackCards from "@/data/slack-cards.json";
-import { renderMrkdwn } from "@/lib/render-mrkdwn";
+import {
+  SlackBlocks,
+  type SlackActionContext,
+  type SlackBlock,
+} from "@/components/slack/slack-card";
+import { plainText } from "@/components/ui/markdown";
 import * as Breadcrumb from "@/components/ui/breadcrumb";
 import * as Button from "@/components/ui/button";
 
 import { IconUserBox } from "../traces/layout";
-
-type SlackBlock = (typeof slackCards.messages)[number]["blocks"][number];
 
 const groupedByTrace = slackCards.messages.reduce(
   (acc, msg) => {
@@ -36,86 +44,6 @@ const LIFECYCLE_COLOR: Record<string, string> = {
   resolved: "bg-success-base",
 };
 
-function SlackCard({ blocks }: { blocks: SlackBlock[] }) {
-  return (
-    <div className='space-y-2.5'>
-      {blocks.map((block, i) => {
-        switch (block.type) {
-          case "header":
-            return (
-              <div key={i} className='text-label-sm text-text-strong-950'>
-                {renderMrkdwn((block as { text: { text: string } }).text.text)}
-              </div>
-            );
-          case "context":
-            return (
-              <div key={i} className='flex flex-wrap items-center gap-1.5 text-[11px] text-text-soft-400'>
-                {(block as { elements: { type: string; text?: string }[] }).elements.map((el, j) =>
-                  el.type === "mrkdwn" ? <span key={j}>{renderMrkdwn(el.text ?? "")}</span> : null,
-                )}
-              </div>
-            );
-          case "section": {
-            const section = block as { text?: { text: string }; fields?: { text: string }[] };
-            return (
-              <div key={i} className='space-y-2'>
-                {section.text && (
-                  <div className='text-paragraph-xs text-text-sub-600'>
-                    {renderMrkdwn(section.text.text)}
-                  </div>
-                )}
-                {section.fields && (
-                  <div className='grid grid-cols-2 gap-x-4 gap-y-1.5'>
-                    {section.fields.map((f, j) => (
-                      <div key={j} className='text-[11px] text-text-sub-600'>
-                        {renderMrkdwn(f.text)}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          }
-          case "divider":
-            return <div key={i} className='h-px bg-stroke-soft-200' />;
-          case "actions":
-            return (
-              <div key={i} className='flex flex-wrap items-center gap-1.5 pt-0.5'>
-                {(block as { elements: { type: string; text?: { text: string }; style?: string; placeholder?: { text: string }; options?: { text: { text: string }; value: string }[] }[] }).elements.map((el, j) => {
-                  if (el.type === "button") {
-                    const cls = el.style === "primary"
-                      ? "bg-success-base text-static-white hover:bg-green-700"
-                      : el.style === "danger"
-                        ? "bg-error-base text-static-white hover:bg-red-700"
-                        : "shadow-custom-input-2 text-text-sub-600 hover:bg-bg-weak-50";
-                    return (
-                      <button key={j} className={cn("rounded-lg px-2.5 py-1 text-[11px] font-medium transition-colors", cls)}>
-                        {el.text?.text}
-                      </button>
-                    );
-                  }
-                  if (el.type === "static_select") {
-                    return (
-                      <select key={j} className='shadow-custom-input-2 rounded-lg px-2 py-1 text-[11px] text-text-sub-600 outline-none'>
-                        <option>{el.placeholder?.text}</option>
-                        {el.options?.map((opt) => (
-                          <option key={opt.value} value={opt.value}>{opt.text.text}</option>
-                        ))}
-                      </select>
-                    );
-                  }
-                  return null;
-                })}
-              </div>
-            );
-          default:
-            return null;
-        }
-      })}
-    </div>
-  );
-}
-
 export default function AlertsPage() {
   const { onMenuClick } = useSidebar();
   const { addIssue } = useIssues();
@@ -130,7 +58,79 @@ export default function AlertsPage() {
     [selectedTrace],
   );
 
-  const currentLifecycles = messages.map((m) => m.lifecycle);
+  const handleSlackAction = (actionId: string, ctx: SlackActionContext) => {
+    switch (actionId) {
+      case "view_trace":
+        router.push(`/traces/${selectedTrace}`);
+        break;
+      case "view_pr":
+        if (ctx.url) window.open(ctx.url, "_blank", "noopener,noreferrer");
+        break;
+      case "create_issue": {
+        const alertMsg = messages.find((m) => m.lifecycle === "alert");
+        const blocks = (alertMsg?.blocks ?? []) as unknown as SlackBlock[];
+        const headerBlock = blocks.find((b) => b.type === "header") as
+          | Extract<SlackBlock, { type: "header" }>
+          | undefined;
+        const sectionBlock = blocks.find((b) => b.type === "section" && "text" in b && b.text) as
+          | Extract<SlackBlock, { type: "section" }>
+          | undefined;
+        addIssue({
+          title: headerBlock ? plainText(headerBlock.text.text).replace(/^[^\w]+/, "").trim() : "Alert issue",
+          description: sectionBlock?.text?.text ?? "",
+          status: "todo",
+          priority: "high",
+          assignee: null,
+          labels: ["bug"],
+          project: null,
+          traceId: selectedTrace,
+        });
+        router.push("/issues/all");
+        break;
+      }
+      case "mute_alert":
+        notification({
+          status: "information",
+          variant: "stroke",
+          icon: RiNotificationOffLine,
+          title: "Alert muted",
+          description: "Notifications paused for this trace.",
+          duration: 4000,
+        });
+        break;
+      case "approve_merge":
+        notification({
+          status: "success",
+          variant: "stroke",
+          icon: RiGitMergeLine,
+          title: "Merge approved",
+          description: "The fix has been queued to merge.",
+          duration: 4000,
+        });
+        break;
+      case "add_to_evalset":
+        notification({
+          status: "feature",
+          variant: "stroke",
+          icon: RiFlaskLine,
+          title: "Added to eval set",
+          description: "This run was added to the evaluation set.",
+          duration: 4000,
+        });
+        break;
+      case "merge_strategy":
+        notification({
+          status: "information",
+          variant: "stroke",
+          title: "Merge strategy set",
+          description: `Strategy: ${ctx.label}.`,
+          duration: 3000,
+        });
+        break;
+      default:
+        break;
+    }
+  };
 
   return (
     <div className='flex h-full flex-col lg:p-2 lg:pl-0'>
@@ -197,8 +197,7 @@ export default function AlertsPage() {
                 {/* Vertical line */}
                 <div className='absolute top-2 bottom-2 left-[7px] w-px bg-stroke-soft-200' />
 
-                {messages.map((msg, idx) => {
-                  const isLast = idx === messages.length - 1;
+                {messages.map((msg) => {
                   return (
                     <div key={msg.id} className='relative pb-6 last:pb-0'>
                       {/* Dot */}
@@ -217,7 +216,10 @@ export default function AlertsPage() {
                           <span className='text-[11px] text-text-disabled-300'>#{msg.channel}</span>
                         </div>
                         <div className='rounded-xl border border-stroke-soft-200 p-3.5'>
-                          <SlackCard blocks={msg.blocks} />
+                          <SlackBlocks
+                            blocks={msg.blocks as unknown as SlackBlock[]}
+                            onAction={handleSlackAction}
+                          />
                         </div>
                       </div>
                     </div>

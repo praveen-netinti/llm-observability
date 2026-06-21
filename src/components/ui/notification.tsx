@@ -32,12 +32,19 @@ const NotificationViewport = React.forwardRef<
 ));
 NotificationViewport.displayName = "NotificationViewport";
 
-type NotificationProps = React.ComponentPropsWithoutRef<typeof NotificationPrimitives.Root> &
+type NotificationProps = Omit<
+  React.ComponentPropsWithoutRef<typeof NotificationPrimitives.Root>,
+  "title"
+> &
   Pick<React.ComponentPropsWithoutRef<typeof Alert.Root>, "status" | "variant"> & {
-    title?: string;
+    title?: React.ReactNode;
     description?: React.ReactNode;
     action?: React.ReactNode;
     disableDismiss?: boolean;
+    /** Override the leading status icon (e.g. a brand logo). */
+    icon?: React.ElementType;
+    /** Extra classes for the leading icon. */
+    iconClassName?: string;
   };
 
 const Notification = React.forwardRef<
@@ -53,6 +60,8 @@ const Notification = React.forwardRef<
       description,
       action,
       disableDismiss = false,
+      icon,
+      iconClassName,
       ...rest
     }: NotificationProps,
     forwardedRef,
@@ -80,6 +89,8 @@ const Notification = React.forwardRef<
         break;
     }
 
+    if (icon) Icon = icon;
+
     return (
       <NotificationPrimitives.Root
         ref={forwardedRef}
@@ -101,7 +112,7 @@ const Notification = React.forwardRef<
           size='large'
           className='shadow-custom-lg border-none ring-transparent'
         >
-          <Alert.Icon as={Icon} aria-hidden='true' />
+          <Alert.Icon as={Icon} aria-hidden='true' className={iconClassName} />
           <div className='flex w-full flex-col gap-2.5'>
             <div className='flex w-full flex-col gap-1'>
               {title && (

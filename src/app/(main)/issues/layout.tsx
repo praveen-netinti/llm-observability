@@ -41,7 +41,8 @@ export default function IssuesLayout({ children }: { children: ReactNode }) {
   const [displayOpen, setDisplayOpen] = useState(false);
 
   const [display, setDisplay] = useState<DisplayState>({
-    view: "list",
+    // view: "list",
+    view: "board",
     grouping: "status",
     showEmptyGroups: false,
     nestedSubIssues: false,
@@ -56,7 +57,7 @@ export default function IssuesLayout({ children }: { children: ReactNode }) {
 
   return (
     <IssuesLayoutContext.Provider value={{ display, setDisplay }}>
-      <div className='flex h-full flex-col lg:p-2 lg:pl-0 select-none'>
+      <div className='flex h-full flex-col select-none lg:p-2 lg:pl-0'>
         <div className='bg-bg-white-0 lg:border-stroke-soft-200 flex h-full flex-col lg:rounded-2xl lg:border'>
           {/* Header */}
           <div className='border-faded-lighter dark:border-stroke-soft-200 flex h-11 w-full items-center border-b px-2'>

@@ -4,16 +4,16 @@
   <picture>
     <source
       media="(prefers-color-scheme: dark)"
-      srcset="public/splash-screen-dark-with-bg.png"
+      srcset="public/splash-screen-light-with-bg.png"
     />
     <source
       media="(prefers-color-scheme: light)"
-      srcset="public/splash-screen-light-with-bg.png"
+      srcset="public/splash-screen-dark-with-bg.png"
     />
     <img
-      src="public/splash-screen-light-with-bg.png"
+      src="public/splash-screen-dark-with-bg.png"
       alt="NeoSigma splash screen"
-      width="720"
+      width="100%"
     />
   </picture>
 </p>

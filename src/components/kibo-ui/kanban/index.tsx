@@ -74,8 +74,7 @@ export const KanbanBoard = ({ id, children, className }: KanbanBoardProps) => {
     <div
       className={cn(
         "group/kanban bg-bg-weak-25/50 dark:bg-bg-weak-25 flex size-full min-h-40 flex-col overflow-hidden rounded-md text-[13px] ring-2 transition-all",
-        "ring-transparent",
-        // isOver ? "ring-primary-base" : "ring-transparent",
+        isOver ? "ring-stroke-soft-200" : "ring-transparent",
         className,
       )}
       ref={setNodeRef}

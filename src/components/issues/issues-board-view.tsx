@@ -108,7 +108,7 @@ export function IssuesBoardView({ filter }: Props) {
   };
 
   return (
-    <div className='no-scrollbar h-full overflow-x-auto overflow-y-hidden p-2.5 text-[13px]'>
+    <div className='no-scrollbar h-full overflow-x-auto overflow-y-hidden px-2.5 pb-2.5 text-[13px]'>
       <KanbanProvider
         columns={columns}
         data={kanbanData}
@@ -182,7 +182,7 @@ export function IssuesBoardView({ filter }: Props) {
                       })}
                     </div>
                     <div className='text-label-xs text-text-soft-400'>
-                      {formatDate(item.createdAt)}
+                      Created {formatDate(item.createdAt)}
                     </div>
                   </div>
                 </KanbanCard>

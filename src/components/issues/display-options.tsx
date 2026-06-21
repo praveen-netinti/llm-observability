@@ -5,7 +5,8 @@ import { RiEqualizerLine } from "@remixicon/react";
 import { cn } from "@/utils";
 
 import * as Button from "@/components/ui/button";
-import * as Popover from "@/components/ui/popover";
+import * as Divider from "@/components/ui/divider";
+import * as Dropdown from "@/components/ui/dropdown";
 import {
   SegmentedControl,
   SegmentedControlList,
@@ -55,11 +56,9 @@ const DISPLAY_PROPERTIES: { value: DisplayProperty; label: string }[] = [
 type Props = {
   display: DisplayState;
   onChange: (d: DisplayState | ((prev: DisplayState) => DisplayState)) => void;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
 };
 
-export function IssuesDisplayOptions({ display, onChange, open, onOpenChange }: Props) {
+export function IssuesDisplayOptions({ display, onChange }: Props) {
   const toggleProperty = (prop: DisplayProperty) => {
     onChange((prev) => ({
       ...prev,
@@ -70,107 +69,135 @@ export function IssuesDisplayOptions({ display, onChange, open, onOpenChange }: 
   };
 
   return (
-    <Popover.Root open={open} onOpenChange={onOpenChange}>
-      <Popover.Trigger asChild>
+    <Dropdown.Root open>
+      <Dropdown.Trigger asChild>
         <Button.Root
           variant='neutral'
           mode='stroke'
           size='xxsmall'
-          className='size-7 gap-1.5 rounded-full'
+          className='border-stroke-soft-200 hover:bg-bg-soft-200 size-7 rounded-full border bg-transparent shadow-none ring-0'
         >
           <Button.Icon as={RiEqualizerLine} className='size-3.5' />
-          <span className='sr-only'>Display</span>
         </Button.Root>
-      </Popover.Trigger>
-      <Popover.Content align='end' sideOffset={8} showArrow={false} className='w-72 rounded-xl p-0'>
-        <div className='divide-stroke-soft-200 flex flex-col divide-y'>
-          {/* View toggle */}
-          <div className='flex items-center justify-between p-3'>
-            <span className='text-label-xs text-text-sub-600'>View</span>
-            <SegmentedControl
-              value={display.view}
-              onValueChange={(v) => onChange((prev) => ({ ...prev, view: v as "list" | "board" }))}
-            >
-              <SegmentedControlList className='h-7'>
-                <SegmentedControlTab value='list' className='px-2.5 text-[11px]'>
-                  List
-                </SegmentedControlTab>
-                <SegmentedControlTab value='board' className='px-2.5 text-[11px]'>
-                  Board
-                </SegmentedControlTab>
-              </SegmentedControlList>
-            </SegmentedControl>
-          </div>
-
-          {/* Grouping */}
-          <div className='flex items-center justify-between p-3'>
-            <span className='text-label-xs text-text-sub-600'>Grouping</span>
-            <Select.Root
+      </Dropdown.Trigger>
+      <Dropdown.Content align='end' className='w-64 pb-0'>
+        <div className='p-4 py-2'>
+          <div className='flex gap-2'>
+            <Button.Root
               size='xxsmall'
-              value={display.grouping}
-              onValueChange={(v) =>
-                onChange((prev) => ({ ...prev, grouping: v as GroupingOption }))
-              }
+              className={cn(
+                "text-text-sub-600 hover:ring-stroke-soft-200 w-full rounded-full px-2.5 text-xs shadow-none!",
+                display.view === "list" && "bg-bg-weak-50 text-text-strong-950",
+              )}
+              variant='neutral'
+              mode='stroke'
+              onClick={() => onChange((prev) => ({ ...prev, view: "list" as "list" | "board" }))}
             >
-              <Select.Trigger className='w-32'>
-                <Select.Value />
-              </Select.Trigger>
-              <Select.Content align='end'>
-                {GROUPING_OPTIONS.map((o) => (
-                  <Select.Item key={o.value} value={o.value}>
-                    {o.label}
-                  </Select.Item>
-                ))}
-              </Select.Content>
-            </Select.Root>
-          </div>
-
-          {/* List options */}
-          <div className='space-y-3 p-3'>
-            <span className='text-label-xs text-text-sub-600'>List options</span>
-
-            <label className='flex items-center justify-between'>
-              <span className='text-paragraph-xs text-text-sub-600'>Show empty groups</span>
-              <Switch.Root
-                checked={display.showEmptyGroups}
-                onCheckedChange={(v) => onChange((prev) => ({ ...prev, showEmptyGroups: !!v }))}
-              />
-            </label>
-
-            <label className='flex items-center justify-between'>
-              <span className='text-paragraph-xs text-text-sub-600'>Nested sub-issues</span>
-              <Switch.Root
-                checked={display.nestedSubIssues}
-                onCheckedChange={(v) => onChange((prev) => ({ ...prev, nestedSubIssues: !!v }))}
-              />
-            </label>
-          </div>
-
-          {/* Display properties */}
-          <div className='space-y-2 p-3'>
-            <span className='text-label-xs text-text-sub-600'>Display properties</span>
-            <div className='flex flex-wrap gap-1.5'>
-              {DISPLAY_PROPERTIES.map((prop) => {
-                const isSelected = display.visibleProperties.includes(prop.value);
-                return (
-                  <button
-                    key={prop.value}
-                    onClick={() => toggleProperty(prop.value)}
-                    className={cn(
-                      "rounded-md px-2 py-0.5 text-[11px] font-medium ring-1 transition-colors ring-inset",
-                      isSelected
-                        ? "bg-bg-weak-25 text-text-strong-950 ring-stroke-soft-200"
-                        : "bg-bg-white-0 text-text-soft-400 ring-stroke-soft-200 hover:text-text-sub-600",
-                    )}
-                  >
-                    {prop.label}
-                  </button>
-                );
-              })}
-            </div>
+              List
+            </Button.Root>
+            <Button.Root
+              size='xxsmall'
+              className={cn(
+                "text-text-sub-600 hover:ring-stroke-soft-200 w-full rounded-full px-2.5 text-xs shadow-none!",
+                display.view === "board" && "bg-bg-weak-50 text-text-strong-950",
+              )}
+              variant='neutral'
+              mode='stroke'
+              onClick={() => onChange((prev) => ({ ...prev, view: "board" as "list" | "board" }))}
+            >
+              Board
+            </Button.Root>
           </div>
         </div>
-      </Popover.Content>
-    </Popover.Root>
+
+        <Divider.Root variant='line-spacing' className='py-0' />
+
+        {/* Grouping */}
+        <div className='flex items-center justify-between px-4 py-2.5'>
+          <span className='text-text-sub-600 text-[13px] font-medium'>Grouping</span>
+          <Select.Root
+            size='xxsmall'
+            variant="compactForInput"
+            value={display.grouping}
+            onValueChange={(v) => onChange((prev) => ({ ...prev, grouping: v as GroupingOption }))}
+          >
+            <Select.Trigger className='h-7 w-28 border border-stroke-soft-200! rounded-lg text-xs px-2'>
+              <Select.Value />
+            </Select.Trigger>
+            <Select.Content align='end'>
+              {GROUPING_OPTIONS.map((o) => (
+                <Select.Item key={o.value} value={o.value}>
+                  {o.label}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
+        </div>
+
+        <Divider.Root variant='line-spacing' className='py-0' />
+
+        <div className='p-4'>
+          <div className='text-text-strong-950 flex h-6 items-center text-xs font-medium capitalize'>
+            {display.view} options
+          </div>
+
+          {/* Show empty groups Toogle */}
+          <div
+            role='button'
+            onClick={(e) => {
+              e.preventDefault();
+              onChange((prev) => ({ ...prev, showEmptyGroups: !prev.showEmptyGroups }));
+            }}
+            className='flex h-8 items-center'
+          >
+            <span className='text-text-sub-600 text-xs'>Show empty groups</span>
+            <span className='flex-1' />
+            <Switch.Root
+              checked={display.showEmptyGroups}
+              onCheckedChange={(v) => onChange((prev) => ({ ...prev, showEmptyGroups: !!v }))}
+            />
+          </div>
+
+          <div
+            role='button'
+            className='flex h-8 items-center'
+            onClick={(e) => {
+              e.preventDefault();
+              onChange((prev) => ({ ...prev, nestedSubIssues: !prev.nestedSubIssues }));
+            }}
+          >
+            <span className='text-text-sub-600 text-xs'>Nested sub-issues</span>
+            <span className='flex-1' />
+            <Switch.Root
+              checked={display.nestedSubIssues}
+              onCheckedChange={(v) => onChange((prev) => ({ ...prev, nestedSubIssues: !!v }))}
+            />
+          </div>
+
+          <div className='text-text-sub-600 flex h-7.5 items-center text-xs font-medium'>
+            Display properties
+          </div>
+          <div className='flex flex-wrap gap-1.5'>
+            {DISPLAY_PROPERTIES.map((prop) => {
+              const isSelected = display.visibleProperties.includes(prop.value);
+              return (
+                <button
+                  key={prop.value}
+                  onClick={() => toggleProperty(prop.value)}
+                  className={cn(
+                    "h-6 rounded-full px-2 text-[11px] font-medium ring-1 transition-colors ring-inset",
+                    isSelected
+                      ? "bg-bg-weak-25 text-text-strong-950 ring-stroke-soft-200"
+                      : "bg-bg-white-0 text-text-soft-400 ring-stroke-soft-200 hover:text-text-sub-600",
+                  )}
+                >
+                  {prop.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </Dropdown.Content>
+    </Dropdown.Root>
   );
 }

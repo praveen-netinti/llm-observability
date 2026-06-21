@@ -38,11 +38,8 @@ export default function IssuesLayout({ children }: { children: ReactNode }) {
   const { onMenuClick } = useSidebar();
   const pathname = usePathname();
   const router = useRouter();
-  const [displayOpen, setDisplayOpen] = useState(false);
-
   const [display, setDisplay] = useState<DisplayState>({
-    // view: "list",
-    view: "board",
+    view: "list",
     grouping: "status",
     showEmptyGroups: false,
     nestedSubIssues: false,
@@ -117,8 +114,6 @@ export default function IssuesLayout({ children }: { children: ReactNode }) {
             <IssuesDisplayOptions
               display={display}
               onChange={setDisplay}
-              open={displayOpen}
-              onOpenChange={setDisplayOpen}
             />
           </div>
 

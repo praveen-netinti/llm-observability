@@ -95,7 +95,12 @@ const Notification = React.forwardRef<
         asChild
         {...rest}
       >
-        <Alert.Root variant={variant} status={status} size='large'>
+        <Alert.Root
+          variant={variant}
+          status={status}
+          size='large'
+          className='shadow-custom-lg border-none ring-transparent'
+        >
           <Alert.Icon as={Icon} aria-hidden='true' />
           <div className='flex w-full flex-col gap-2.5'>
             <div className='flex w-full flex-col gap-1'>

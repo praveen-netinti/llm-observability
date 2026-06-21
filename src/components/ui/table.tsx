@@ -51,13 +51,13 @@ const TableBody = React.forwardRef<
   return (
     <>
       {/* to have space between thead and tbody */}
-      {/* <tbody
+      <tbody
         aria-hidden='true'
         className='table-row'
         style={{
           height: spacing,
         }}
-      /> */}
+      />
 
       <tbody ref={forwardedRef} {...rest} />
     </>

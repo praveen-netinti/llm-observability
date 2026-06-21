@@ -13,8 +13,11 @@ import {
 
 import * as Button from "@/components/ui/button";
 import * as Dropdown from "@/components/ui/dropdown";
+import { useSettings } from "@/contexts/settings-context";
 
 export function HelpDropdown() {
+  const { openSettings } = useSettings();
+
   return (
     <div className='relative shrink-0 p-5 lg:px-3.5 lg:pt-4 lg:pb-3.5'>
       <Dropdown.Root>
@@ -46,7 +49,7 @@ export function HelpDropdown() {
             Keyboard shortcuts
             <span className='text-2xs text-text-sub-600 ml-auto'>⌘ /</span>
           </Dropdown.Item>
-          <Dropdown.Item>
+          <Dropdown.Item onSelect={() => openSettings()}>
             <Dropdown.ItemIcon as={RiSettings2Line} />
             Settings
             <span className='text-2xs text-text-sub-600 ml-auto'>G then S</span>

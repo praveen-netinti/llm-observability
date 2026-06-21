@@ -456,7 +456,7 @@ export default function IssueDetailPage({ params }: { params: Promise<{ issueId:
                     <PropertyRow label='Trace'>
                       <Link
                         href={`/traces/${issue.traceId}`}
-                        className='text-paragraph-xs text-primary-base inline-flex items-center gap-1 hover:underline'
+                        className='text-label-xs text-text-strong-950 inline-flex items-center gap-1 hover:underline'
                       >
                         <RiExternalLinkLine className='size-3' />
                         {issue.traceId}
@@ -465,7 +465,7 @@ export default function IssueDetailPage({ params }: { params: Promise<{ issueId:
                   )}
 
                   <PropertyRow label='Created'>
-                    <span className='text-paragraph-xs text-text-sub-600'>
+                    <span className='text-label-xs text-text-sub-600'>
                       {new Date(issue.createdAt).toLocaleString()}
                     </span>
                   </PropertyRow>
@@ -504,20 +504,6 @@ function MetaItem({
         <span className='text-text-soft-400 text-xs font-medium text-nowrap'>{label} :</span>
       </div>
       <span className='text-text-strong-950 ml-2 text-xs font-medium tabular-nums'>{children}</span>
-    </div>
-  );
-
-  return (
-    <div className='flex items-center justify-between gap-2'>
-      <div className='flex flex-col'>
-        <div className='flex items-center gap-1'>
-          <Icon className='text-text-soft-400 size-4 shrink-0' />
-          <span className='text-text-soft-400 text-[11px] font-medium uppercase'>{label}</span>
-        </div>
-        <span className='text-text-strong-950 ml-5 text-[13px] font-medium tabular-nums'>
-          {children}
-        </span>
-      </div>
     </div>
   );
 }

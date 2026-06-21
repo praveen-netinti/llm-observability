@@ -52,6 +52,16 @@ export default function IssuesLayout({ children }: { children: ReactNode }) {
       ? "backlog"
       : "all";
 
+  const isDetailPage = /\/issues\/[A-Z]+-\d+/i.test(pathname);
+
+  if (isDetailPage) {
+    return (
+      <IssuesLayoutContext.Provider value={{ display, setDisplay }}>
+        {children}
+      </IssuesLayoutContext.Provider>
+    );
+  }
+
   return (
     <IssuesLayoutContext.Provider value={{ display, setDisplay }}>
       <div className='flex h-full flex-col select-none lg:p-2 lg:pl-0'>

@@ -16,7 +16,7 @@ export function NavItemLink({ item, onClick }: NavItemLinkProps) {
   const pathname = usePathname();
   const IconComponent = item.icon;
   const itemPath = item.href.split("?")[0];
-  const isActive = pathname === itemPath;
+  const isActive = pathname === itemPath || (itemPath !== "/" && pathname.startsWith(itemPath));
 
   return (
     <Link

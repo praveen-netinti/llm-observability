@@ -113,7 +113,7 @@ const MainSidebar = forwardRef<MainSidebarRef>((_props, ref) => {
 
               {mainNavSection.items.map((item) => {
                 const IconComponent = item.icon;
-                const isActive = pathname === item.href.split("?")[0];
+                  const isActive = pathname === item.href.split("?")[0] || (item.href !== "/" && pathname.startsWith(item.href.split("?")[0]));
                 return (
                   <Tooltip.Root key={item.id}>
                     <Tooltip.Trigger asChild>

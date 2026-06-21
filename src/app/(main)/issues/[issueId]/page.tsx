@@ -3,17 +3,33 @@
 import React, { use, useMemo, useState } from "react";
 import { useIssues } from "@/contexts/issues-context";
 import { useSidebar } from "@/contexts/sidebar-context";
-import { RiArrowDownSFill, RiArrowDropDownFill, RiArrowDropUpFill, RiArrowRightSLine, RiExternalLinkLine, RiLayoutLeft2Line, RiPriceTag3Line, RiSettings4Line, RiSlideshowLine } from "@remixicon/react";
+import {
+  RiAlertLine,
+  RiArrowDropDownFill,
+  RiArrowDropUpFill,
+  RiArrowRightSLine,
+  RiCpuLine,
+  RiExternalLinkLine,
+  RiLayoutLeft2Line,
+  RiMoneyDollarCircleLine,
+  RiServerLine,
+} from "@remixicon/react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-
-
-import { ASSIGNEE_OPTIONS, LABEL_OPTIONS, PRIORITY_OPTIONS, PROJECT_OPTIONS, STATUS_OPTIONS, type IssueLabel, type IssuePriority, type IssueStatus } from "@/lib/issues-store";
+import { flatSpans } from "@/lib/flatten-traces";
+import {
+  ASSIGNEE_OPTIONS,
+  LABEL_OPTIONS,
+  PRIORITY_OPTIONS,
+  PROJECT_OPTIONS,
+  STATUS_OPTIONS,
+  type IssueLabel,
+  type IssuePriority,
+  type IssueStatus,
+} from "@/lib/issues-store";
 import { renderMrkdwn } from "@/lib/render-mrkdwn";
-
-
 
 import { PRIORITY_CONFIG, STATUS_CONFIG } from "@/components/issues/issue-config";
 import * as Accordion from "@/components/ui/accordion";
@@ -23,13 +39,7 @@ import * as ButtonGroup from "@/components/ui/button-group";
 import * as Select from "@/components/ui/select";
 import * as Tooltip from "@/components/ui/tooltip";
 
-
-
 import { IconUserBox } from "../../traces/layout";
-
-
-
-
 
 function CopyButton({
   text,
@@ -96,6 +106,32 @@ export default function IssueDetailPage({ params }: { params: Promise<{ issueId:
 
   const issue = useMemo(() => issues.find((i) => i.id === issueId), [issues, issueId]);
   const currentIndex = useMemo(() => issues.findIndex((i) => i.id === issueId), [issues, issueId]);
+
+  // Derive severity / environment / model / cost from the linked trace
+  const meta = useMemo(() => {
+    const severityMap: Record<IssuePriority, string> = {
+      urgent: "Critical",
+      high: "High",
+      medium: "Medium",
+      low: "Low",
+      "no-priority": "None",
+    };
+    const severity = issue ? severityMap[issue.priority] : "None";
+
+    if (!issue?.traceId) {
+      return {
+        severity,
+        environment: null as string | null,
+        model: null as string | null,
+        cost: null as number | null,
+      };
+    }
+    const spans = flatSpans.filter((s) => s.traceId === issue.traceId);
+    const environment = spans.find((s) => s.traceEnvironment)?.traceEnvironment ?? null;
+    const model = spans.find((s) => s.model)?.model ?? null;
+    const cost = spans[0]?.traceTotalCostUsd ?? null;
+    return { severity, environment, model, cost };
+  }, [issue]);
 
   if (!issue) {
     return (
@@ -184,6 +220,26 @@ export default function IssueDetailPage({ params }: { params: Promise<{ issueId:
               <h1 className='text-label-xl text-text-strong-950 mb-4 font-semibold'>
                 {issue.title}
               </h1>
+
+              {/* Metadata strip */}
+              <div className='border-stroke-soft-200 mb-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-y p-4'>
+                <MetaItem icon={RiAlertLine} label='Severity'>
+                  <span className={severityColor(meta.severity)}>{meta.severity}</span>
+                </MetaItem>
+                <div className='bg-bg-soft-200 h-3.5 w-px' style={{ marginInline: "8px" }} />
+                <MetaItem icon={RiServerLine} label='Environment'>
+                  {meta.environment ?? "—"}
+                </MetaItem>
+                <div className='bg-bg-soft-200 h-3.5 w-px' style={{ marginInline: "8px" }} />
+                <MetaItem icon={RiCpuLine} label='Model'>
+                  {meta.model ?? "—"}
+                </MetaItem>
+                <div className='bg-bg-soft-200 h-3.5 w-px' style={{ marginInline: "8px" }} />
+                <MetaItem icon={RiMoneyDollarCircleLine} label='Cost so far'>
+                  {meta.cost != null ? `$${meta.cost.toFixed(4)}` : "—"}
+                </MetaItem>
+              </div>
+
               <div className='text-paragraph-sm text-text-strong-950 leading-relaxed'>
                 {issue.description ? (
                   renderMrkdwn(issue.description)
@@ -245,7 +301,7 @@ export default function IssueDetailPage({ params }: { params: Promise<{ issueId:
                   Properties
                   <Accordion.Arrow openIcon={RiArrowDropDownFill} closeIcon={RiArrowDropUpFill} />
                 </Accordion.Trigger>
-                <Accordion.Content className='space-y-3 mt-3'>
+                <Accordion.Content className='mt-3 space-y-3'>
                   <PropertyRow label='Status'>
                     <Select.Root
                       size='xxsmall'
@@ -327,7 +383,7 @@ export default function IssueDetailPage({ params }: { params: Promise<{ issueId:
                   Labels
                   <Accordion.Arrow openIcon={RiArrowDropDownFill} closeIcon={RiArrowDropUpFill} />
                 </Accordion.Trigger>
-                <Accordion.Content className='space-y-2 mt-3'>
+                <Accordion.Content className='mt-3 space-y-2'>
                   <Select.Root
                     size='xxsmall'
                     value={issue.labels[0] ?? "none"}
@@ -371,7 +427,7 @@ export default function IssueDetailPage({ params }: { params: Promise<{ issueId:
                   Details
                   <Accordion.Arrow openIcon={RiArrowDropDownFill} closeIcon={RiArrowDropUpFill} />
                 </Accordion.Trigger>
-                <Accordion.Content className='space-y-3 mt-3'>
+                <Accordion.Content className='mt-3 space-y-3'>
                   <PropertyRow label='Project'>
                     <Select.Root
                       size='xxsmall'
@@ -430,4 +486,52 @@ function PropertyRow({ label, children }: { label: string; children: React.React
       <div className='flex-1'>{children}</div>
     </div>
   );
+}
+
+function MetaItem({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: React.ElementType;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className='flex flex-1 items-center'>
+      <div className='flex items-center gap-1'>
+        <Icon className='text-text-soft-400 size-4 shrink-0' />
+        <span className='text-text-soft-400 text-xs font-medium text-nowrap'>{label} :</span>
+      </div>
+      <span className='text-text-strong-950 ml-2 text-xs font-medium tabular-nums'>{children}</span>
+    </div>
+  );
+
+  return (
+    <div className='flex items-center justify-between gap-2'>
+      <div className='flex flex-col'>
+        <div className='flex items-center gap-1'>
+          <Icon className='text-text-soft-400 size-4 shrink-0' />
+          <span className='text-text-soft-400 text-[11px] font-medium uppercase'>{label}</span>
+        </div>
+        <span className='text-text-strong-950 ml-5 text-[13px] font-medium tabular-nums'>
+          {children}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function severityColor(severity: string): string {
+  switch (severity) {
+    case "Critical":
+    case "High":
+      return "text-error-base";
+    case "Medium":
+      return "text-warning-base";
+    case "Low":
+      return "text-success-base";
+    default:
+      return "text-text-sub-600";
+  }
 }

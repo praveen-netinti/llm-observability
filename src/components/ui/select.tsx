@@ -268,8 +268,8 @@ const SELECT_TRIGGER_ICON_NAME = "SelectTriggerIcon";
 
 const SelectTrigger = React.forwardRef<
   React.ComponentRef<typeof SelectPrimitives.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitives.Trigger>
->(({ className, children, ...rest }, forwardedRef) => {
+  React.ComponentPropsWithoutRef<typeof SelectPrimitives.Trigger> & { showArrow?: boolean }
+>(({ className, children, showArrow = true, ...rest }, forwardedRef) => {
   const { size, variant, hasError } = useSelectContext();
 
   const { triggerRoot, triggerArrow } = selectVariants({
@@ -285,9 +285,11 @@ const SelectTrigger = React.forwardRef<
       {...rest}
     >
       <Slottable>{children}</Slottable>
-      <SelectPrimitives.Icon asChild>
-        <RiArrowDownSLine className={triggerArrow()} />
-      </SelectPrimitives.Icon>
+      {showArrow && (
+        <SelectPrimitives.Icon asChild>
+          <RiArrowDownSLine className={triggerArrow()} />
+        </SelectPrimitives.Icon>
+      )}
     </SelectPrimitives.Trigger>
   );
 });

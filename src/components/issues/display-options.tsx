@@ -69,7 +69,7 @@ export function IssuesDisplayOptions({ display, onChange }: Props) {
   };
 
   return (
-    <Dropdown.Root open>
+    <Dropdown.Root>
       <Dropdown.Trigger asChild>
         <Button.Root
           variant='neutral'
@@ -117,11 +117,11 @@ export function IssuesDisplayOptions({ display, onChange }: Props) {
           <span className='text-text-sub-600 text-[13px] font-medium'>Grouping</span>
           <Select.Root
             size='xxsmall'
-            variant="compactForInput"
+            variant='compactForInput'
             value={display.grouping}
             onValueChange={(v) => onChange((prev) => ({ ...prev, grouping: v as GroupingOption }))}
           >
-            <Select.Trigger className='h-7 w-28 border border-stroke-soft-200! rounded-lg text-xs px-2'>
+            <Select.Trigger className='border-stroke-soft-200! h-7 w-28 rounded-lg border px-2 text-xs'>
               <Select.Value />
             </Select.Trigger>
             <Select.Content align='end'>

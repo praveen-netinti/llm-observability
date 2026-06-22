@@ -85,28 +85,28 @@ export const sidebarData: SidebarData = {
         { id: "traces", label: "Traces", icon: RiFlowChart, href: "/traces" },
         { id: "issues", label: "Issues", icon: RiAlertLine, href: "/issues", badge: "3" },
         { id: "alerts", label: "Alerts", icon: RiAlarmWarningLine, href: "/alerts" },
-        { id: "playground", label: "Playground", icon: RiPlayCircleLine, href: "/playground" },
+        // { id: "playground", label: "Playground", icon: RiPlayCircleLine, href: "/playground" },
       ],
     },
-    {
-      id: "observe",
-      title: "Observe",
-      items: [
-        { id: "models", label: "Models", icon: RiStackLine, href: "/models" },
-        { id: "prompts", label: "Prompts", icon: RiTerminalBoxLine, href: "/prompts" },
-        { id: "evaluations", label: "Evaluations", icon: RiBarChartBoxLine, href: "/evaluations" },
-        { id: "cost", label: "Cost & Usage", icon: RiMoneyDollarCircleLine, href: "/cost" },
-      ],
-    },
-    {
-      id: "manage",
-      title: "Manage",
-      items: [
-        { id: "api-keys", label: "API Keys", icon: RiKey2Line, href: "/api-keys" },
-        { id: "guardrails", label: "Guardrails", icon: RiShieldCheckLine, href: "/guardrails" },
-        { id: "settings", label: "Settings", icon: RiSettings2Line, href: "/settings" },
-      ],
-    },
+    // {
+    //   id: "observe",
+    //   title: "Observe",
+    //   items: [
+    //     { id: "models", label: "Models", icon: RiStackLine, href: "/models" },
+    //     { id: "prompts", label: "Prompts", icon: RiTerminalBoxLine, href: "/prompts" },
+    //     { id: "evaluations", label: "Evaluations", icon: RiBarChartBoxLine, href: "/evaluations" },
+    //     { id: "cost", label: "Cost & Usage", icon: RiMoneyDollarCircleLine, href: "/cost" },
+    //   ],
+    // },
+    // {
+    //   id: "manage",
+    //   title: "Manage",
+    //   items: [
+    //     { id: "api-keys", label: "API Keys", icon: RiKey2Line, href: "/api-keys" },
+    //     { id: "guardrails", label: "Guardrails", icon: RiShieldCheckLine, href: "/guardrails" },
+    //     { id: "settings", label: "Settings", icon: RiSettings2Line, href: "/settings" },
+    //   ],
+    // },
   ],
   announcement: {
     title: "New version available",

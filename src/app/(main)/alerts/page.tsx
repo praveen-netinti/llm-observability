@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React from "react";
 import { useIssues } from "@/contexts/issues-context";
 import { useSidebar } from "@/contexts/sidebar-context";
 import slackCards from "@/data/slack-cards.json";
@@ -28,13 +28,8 @@ import { plainText } from "@/components/ui/markdown";
 
 import { IconUserBox } from "../traces/layout";
 
-const groupedByTrace = slackCards.messages.reduce(
-  (acc, msg) => {
-    if (!acc[msg.traceId]) acc[msg.traceId] = [];
-    acc[msg.traceId].push(msg);
-    return acc;
-  },
-  {} as Record<string, typeof slackCards.messages>,
+const allMessages = [...slackCards.messages].sort(
+  (a, b) => new Date(a.postedAt).getTime() - new Date(b.postedAt).getTime(),
 );
 
 const LIFECYCLE_BADGE_COLOR: Record<string, "red" | "orange" | "blue" | "green"> = {
@@ -48,27 +43,19 @@ export default function AlertsPage() {
   const { onMenuClick } = useSidebar();
   const { addIssue } = useIssues();
   const router = useRouter();
-  const traceIds = Object.keys(groupedByTrace);
-  const [selectedTrace, setSelectedTrace] = useState(traceIds[0]);
 
-  const messages = useMemo(
-    () =>
-      (groupedByTrace[selectedTrace] ?? []).sort(
-        (a, b) => new Date(a.postedAt).getTime() - new Date(b.postedAt).getTime(),
-      ),
-    [selectedTrace],
-  );
-
-  const handleSlackAction = (actionId: string, ctx: SlackActionContext) => {
+  const handleSlackAction = (traceId: string) => (actionId: string, ctx: SlackActionContext) => {
     switch (actionId) {
       case "view_trace":
-        router.push(`/traces/${selectedTrace}`);
+        router.push(`/traces/${traceId}`);
         break;
       case "view_pr":
         if (ctx.url) window.open(ctx.url, "_blank", "noopener,noreferrer");
         break;
       case "create_issue": {
-        const alertMsg = messages.find((m) => m.lifecycle === "alert");
+        const alertMsg = slackCards.messages.find(
+          (m) => m.traceId === traceId && m.lifecycle === "alert",
+        );
         const blocks = (alertMsg?.blocks ?? []) as unknown as SlackBlock[];
         const headerBlock = blocks.find((b) => b.type === "header") as
           | Extract<SlackBlock, { type: "header" }>
@@ -88,7 +75,7 @@ export default function AlertsPage() {
           assignee: null,
           labels: ["bug"],
           project: null,
-          traceId: selectedTrace,
+          traceId,
         });
         router.push("/issues/all");
         break;
@@ -161,47 +148,45 @@ export default function AlertsPage() {
             </Breadcrumb.Item>
           </Breadcrumb.Root>
         </div>
+
         <div className='no-scrollbar h-full flex-1 overflow-auto'>
-          <div className='mr-auto max-w-140 px-6 py-8'>
-            <div className='relative'>
-              {messages.map((msg) => (
-                <div key={msg.id} className='relative pb-6 last:pb-0'>
-                  <div className='flex flex-row'>
-                    <div>
-                      <Image
-                        width={32}
-                        height={32}
-                        src='/neosigma-icon.png'
-                        alt=''
-                        className='mt-1 h-6! min-h-6 w-6! min-w-6'
-                      />
+          <div className='mr-auto max-w-160 px-6 py-8'>
+            <div className='space-y-6'>
+              {allMessages.map((msg) => (
+                <div key={msg.id} className='flex flex-row'>
+                  <div>
+                    <Image
+                      width={32}
+                      height={32}
+                      src='/neosigma-icon.png'
+                      alt=''
+                      className='mt-1 h-6! min-h-6 w-6! min-w-6'
+                    />
+                  </div>
+                  <div className='ml-2 flex-1'>
+                    <div className='mb-1.5 flex items-center gap-2'>
+                      <span className='text-label-sm font-semibold'>NeoSigma</span>
+                      <Badge.Root
+                        size='small'
+                        variant='lighter'
+                        color={LIFECYCLE_BADGE_COLOR[msg.lifecycle] ?? "gray"}
+                        className='capitalize'
+                      >
+                        {msg.lifecycle}
+                      </Badge.Root>
+                      <span className='text-text-sub-600 text-[11px]'>
+                        {new Date(msg.postedAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                      <span className='text-text-soft-400 text-[11px]'>{msg.channel}</span>
                     </div>
-                    <div className='ml-2'>
-                      <div className='mb-1.5 flex items-center gap-2'>
-                        <span className='text-label-sm font-semibold'>NeoSigma</span>
-                        <Badge.Root
-                          size='small'
-                          variant='lighter'
-                          color={LIFECYCLE_BADGE_COLOR[msg.lifecycle] ?? "gray"}
-                          className='capitalize'
-                        >
-                          {/* <Badge.Dot /> */}
-                          {msg.lifecycle}
-                        </Badge.Root>
-                        <span className='text-text-sub-600 text-[11px]'>
-                          {new Date(msg.postedAt).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                        <span className='text-text-soft-400 text-[11px]'>{msg.channel}</span>
-                      </div>
-                      <div className='border-faded-lighter rounded-xl border p-3.5'>
-                        <SlackBlocks
-                          blocks={msg.blocks as unknown as SlackBlock[]}
-                          onAction={handleSlackAction}
-                        />
-                      </div>
+                    <div className='border-faded-lighter rounded-xl border p-3.5'>
+                      <SlackBlocks
+                        blocks={msg.blocks as unknown as SlackBlock[]}
+                        onAction={handleSlackAction(msg.traceId)}
+                      />
                     </div>
                   </div>
                 </div>

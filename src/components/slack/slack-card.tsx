@@ -119,7 +119,7 @@ function SlackButton({
       mode={mode}
       size={size}
       onClick={handle}
-      className='cursor-pointer'
+      className='cursor-pointer text-[13px]'
     >
       {label}
     </Button.Root>
@@ -181,7 +181,7 @@ export type SlackBlocksProps = {
 export function SlackBlocks({
   blocks,
   onAction,
-  density = "comfortable",
+  density = "compact",
   className,
 }: SlackBlocksProps) {
   const compact = density === "compact";

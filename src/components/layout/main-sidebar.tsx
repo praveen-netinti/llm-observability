@@ -220,26 +220,6 @@ const MainSidebar = forwardRef<MainSidebarRef>((_props, ref) => {
               ))}
             </div>
 
-            {/* Announcement footer */}
-            {/* {sidebarData.announcement && (
-              <div className='mx-3.5 mb-4 pt-3'>
-                <div className='bg-bg-white-0 border-stroke-soft-200 flex flex-col gap-1.5 overflow-hidden rounded-xl border p-3'>
-                  <span className='text-text-strong-950 text-xs font-semibold'>
-                    {sidebarData.announcement.title}
-                  </span>
-                  <p className='text-text-sub-600 text-xs leading-relaxed text-wrap wrap-break-word'>
-                    {sidebarData.announcement.description}
-                  </p>
-                  <Link
-                    href={sidebarData.announcement.href}
-                    className='text-primary-base hover:text-primary-dark text-xs font-medium'
-                  >
-                    {sidebarData.announcement.linkLabel ?? "Learn more"} →
-                  </Link>
-                </div>
-              </div>
-            )} */}
-
             <HelpDropdown />
           </nav>
         </div>

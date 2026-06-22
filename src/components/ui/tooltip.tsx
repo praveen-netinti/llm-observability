@@ -41,8 +41,6 @@ export const tooltipVariants = tv({
         content:
           "bg-bg-white-0 dark:bg-bg-soft-200 text-text-strong-950 ring-stroke-soft-200 ring-1",
         arrow: "border-stroke-soft-200 bg-bg-white-0 dark:bg-bg-soft-200",
-        // content: "bg-bg-white-0 text-text-strong-950 ring-stroke-soft-200 ring-1",
-        // arrow: "border-stroke-soft-200 bg-bg-white-0",
       },
     },
   },

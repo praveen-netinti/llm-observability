@@ -64,7 +64,11 @@ export type SlackActionHandler = (actionId: string, ctx: SlackActionContext) => 
 /** Per-`action_id` affordances: leading icon + button treatment. */
 const ACTION_META: Record<
   string,
-  { icon?: React.ElementType; variant?: "primary" | "neutral" | "error"; mode?: "filled" | "stroke" | "lighter" }
+  {
+    icon?: React.ElementType;
+    variant?: "primary" | "neutral" | "error";
+    mode?: "filled" | "stroke" | "lighter";
+  }
 > = {
   view_trace: { icon: RiExternalLinkLine, variant: "neutral", mode: "stroke" },
   view_pr: { icon: RiGitPullRequestLine, variant: "neutral", mode: "stroke" },
@@ -77,8 +81,10 @@ const ACTION_META: Record<
 /** Map Slack's `style` to button variant/mode, with action overrides on top. */
 function buttonTreatment(el: ButtonElement) {
   const meta = ACTION_META[el.action_id] ?? {};
-  if (el.style === "primary") return { variant: "primary" as const, mode: "filled" as const, ...stripUndefined(meta) };
-  if (el.style === "danger") return { variant: "error" as const, mode: "lighter" as const, ...stripUndefined(meta) };
+  if (el.style === "primary")
+    return { variant: "primary" as const, mode: "filled" as const, ...stripUndefined(meta) };
+  if (el.style === "danger")
+    return { variant: "error" as const, mode: "lighter" as const, ...stripUndefined(meta) };
   return { variant: meta.variant ?? "neutral", mode: meta.mode ?? "stroke", icon: meta.icon };
 }
 
@@ -108,8 +114,13 @@ function SlackButton({
   };
 
   return (
-    <Button.Root variant={variant} mode={mode} size={size} onClick={handle} className='cursor-pointer'>
-      {Icon && <Button.Icon as={Icon} />}
+    <Button.Root
+      variant={variant}
+      mode={mode}
+      size={size}
+      onClick={handle}
+      className='cursor-pointer'
+    >
       {label}
     </Button.Root>
   );
@@ -167,7 +178,12 @@ export type SlackBlocksProps = {
  * system. Supports `header`, `context`, `section` (text + 2-col fields),
  * `divider`, and `actions` (button + static_select).
  */
-export function SlackBlocks({ blocks, onAction, density = "comfortable", className }: SlackBlocksProps) {
+export function SlackBlocks({
+  blocks,
+  onAction,
+  density = "comfortable",
+  className,
+}: SlackBlocksProps) {
   const compact = density === "compact";
   const btnSize = compact ? "xxsmall" : "xsmall";
 
@@ -230,7 +246,7 @@ export function SlackBlocks({ blocks, onAction, density = "comfortable", classNa
                     {block.fields.map((f, j) => (
                       <Markdown
                         key={j}
-                        className='text-text-sub-600 text-[11px] leading-snug [&_br]:hidden [&_strong]:mb-0.5 [&_strong]:block [&_strong]:text-[10px] [&_strong]:font-medium [&_strong]:tracking-wide [&_strong]:text-text-soft-400 [&_strong]:uppercase'
+                        className='text-text-sub-600 [&_strong]:text-text-soft-400 text-[11px] leading-snug [&_br]:hidden [&_strong]:mb-0.5 [&_strong]:block [&_strong]:text-[10px] [&_strong]:font-medium [&_strong]:tracking-wide [&_strong]:uppercase'
                       >
                         {f.text}
                       </Markdown>

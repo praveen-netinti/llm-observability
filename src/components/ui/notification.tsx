@@ -112,7 +112,6 @@ const Notification = React.forwardRef<
           size='large'
           className='shadow-custom-lg border-none ring-transparent'
         >
-          <Alert.Icon as={Icon} aria-hidden='true' className={iconClassName} />
           <div className='flex w-full flex-col gap-2.5'>
             <div className='flex w-full flex-col gap-1'>
               {title && (

@@ -111,7 +111,10 @@ function buildFallbackBlocks(trace: FlatSpan | undefined, traceId: string): Slac
   if (trace?.error) {
     blocks.push({
       type: "section",
-      text: { type: "mrkdwn", text: `This run aborted with \`${trace.error}\` and never completed.` },
+      text: {
+        type: "mrkdwn",
+        text: `This run aborted with \`${trace.error}\` and never completed.`,
+      },
     });
   }
 
@@ -207,13 +210,6 @@ function formatTime(iso: string): string {
   });
 }
 
-// function truncateJson(obj: Record<string, unknown> | null, maxLen = 60): string {
-//   if (!obj) return "—";
-//   const str = JSON.stringify(obj);
-//   if (str.length <= maxLen) return str;
-//   return str.slice(0, maxLen) + "…";
-// }
-
 const statusConfig = {
   success: { variant: "completed" as const, icon: RiCheckboxCircleFill, label: "Success" },
   error: { variant: "failed" as const, icon: RiCloseCircleFill, label: "Error" },
@@ -270,9 +266,12 @@ export default function TracesLayout() {
       | Extract<SlackBlock, { type: "section" }>
       | undefined;
     const issueTitle = headerBlock
-      ? plainText(headerBlock.text.text).replace(/^[^\w]+/, "").trim()
+      ? plainText(headerBlock.text.text)
+          .replace(/^[^\w]+/, "")
+          .trim()
       : `Trace failed — ${trace?.traceName ?? traceId}`;
-    const issueBody = sectionBlock?.text?.text ?? trace?.error ?? "An error occurred in this trace.";
+    const issueBody =
+      sectionBlock?.text?.text ?? trace?.error ?? "An error occurred in this trace.";
 
     const { dismiss } = notification({
       id: `slack-${traceId}`,
@@ -281,7 +280,8 @@ export default function TracesLayout() {
       icon: SlackLogo,
       iconClassName: "size-5",
       title: (
-        <div className='flex items-center gap-1.5'>
+        <div className='flex items-center gap-1.5 mb-4'>
+          <SlackLogo className="size-3.5" />
           <span className='text-text-strong-950 text-label-sm font-semibold'>Slack</span>
           <span className='bg-bg-soft-200 size-1 rounded-full' />
           <span className='text-text-soft-400 font-mono text-[11px]'>{channel}</span>
@@ -397,21 +397,11 @@ export default function TracesLayout() {
     () => [
       {
         id: "select",
-        // header: ({ table }) => (
-        //   <Checkbox.Root
-        //     checked={
-        //       table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")
-        //     }
-        //     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        //     aria-label='Select all'
-        //   />
-        // ),
         cell: ({ row }) => (
           <Checkbox.Root
             checked={row.getIsSelected()}
             onCheckedChange={(value) => row.toggleSelected(!!value)}
             aria-label='Select row'
-            // className='opacity-0 group-hover/row:opacity-100! group-data-selected-true/row:opacity-100!'
             className={cn(
               "transition-all duration-200 ease-out",
               "opacity-0",
@@ -482,37 +472,6 @@ export default function TracesLayout() {
           </div>
         ),
       },
-      // {
-      //   id: "input",
-      //   accessorKey: "input",
-      //   header: () => <div className='min-w-44'>Input</div>,
-      //   enableSorting: false,
-      //   cell: ({ row }) => (
-      //     <span className='text-text-sub-600 block max-w-52 truncate'>
-      //       {truncateJson(row.original.input)}
-      //     </span>
-      //   ),
-      // },
-      // {
-      //   id: "output",
-      //   accessorKey: "output",
-      //   header: () => <div className='min-w-44'>Output</div>,
-      //   enableSorting: false,
-      //   cell: ({ row }) => (
-      //     <span className='text-text-sub-600 block max-w-52 truncate'>
-      //       {truncateJson(row.original.output)}
-      //     </span>
-      //   ),
-      // },
-      // {
-      //   id: "error",
-      //   accessorKey: "error",
-      //   header: () => "Error",
-      //   enableSorting: false,
-      //   cell: ({ row }) => (
-      //     <span className='text-error-base block max-w-44 truncate'>{row.original.error ?? "—"}</span>
-      //   ),
-      // },
       {
         id: "startTime",
         accessorKey: "traceStartTime",
@@ -701,15 +660,12 @@ export default function TracesLayout() {
                 <Select.Content align='end' className='w-35'>
                   <Select.Item value='all'>All Status</Select.Item>
                   <Select.Item value='success'>
-                    {/* <RiCheckboxCircleFill className='text-success-base inline size-4' /> */}
                     Success
                   </Select.Item>
                   <Select.Item value='error'>
-                    {/* <RiCloseCircleFill className='text-error-base inline size-4' /> */}
                     Error
                   </Select.Item>
                   <Select.Item value='running'>
-                    {/* <RiLoader4Line className='text-warning-base inline size-4' /> */}
                     Running
                   </Select.Item>
                 </Select.Content>

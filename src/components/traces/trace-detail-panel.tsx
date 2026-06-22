@@ -40,8 +40,6 @@ import {
 import * as TabMenuHorizontal from "@/components/ui/tab-menu-horizontal";
 import * as Tooltip from "@/components/ui/tooltip";
 
-// --- Types ---
-
 type PanelContextValue = {
   traceId: string;
   spans: FlatSpan[];
@@ -85,7 +83,6 @@ function Root({ traceId, children }: { traceId: string; children: React.ReactNod
   );
 }
 
-// --- Header ---
 
 function Header() {
   const { traceId, spans, close } = usePanelContext();
@@ -225,7 +222,6 @@ function Header() {
   );
 }
 
-// --- Trace ID Popover ---
 
 function TraceIdPopover({ traceId }: { traceId: string }) {
   const [copied, setCopied] = useState(false);
@@ -252,7 +248,6 @@ function TraceIdPopover({ traceId }: { traceId: string }) {
       </Popover.Trigger>
       <Popover.Content
         showArrow={false}
-        // sideOffset={-8}
         className='dark:bg-bg-soft-200 flex w-auto items-center gap-2 px-2.5 py-1'
       >
         <span className='text-text-sub-600 text-[11px] font-medium uppercase'>Trace ID</span>
@@ -308,7 +303,6 @@ function CopyIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-// --- Constants ---
 
 const statusIcon = {
   success: RiCheckboxCircleFill,
@@ -350,7 +344,6 @@ function getSpanIcon(span: FlatSpan) {
   return RiLinkM;
 }
 
-// --- Body (Summary + View Toggle + Split Layout) ---
 
 type ViewMode = "tree" | "waterfall";
 
@@ -359,7 +352,6 @@ function Body() {
   const [viewMode, setViewMode] = useState<ViewMode>("tree");
   const [selectedSpanId, setSelectedSpanId] = useState<string | null>(spans[0]?.id ?? null);
   const selectedSpan = spans.find((s) => s.id === selectedSpanId) ?? null;
-  // const rootSpan = spans.find((s) => s.parentId === null);
 
   return (
     <>
@@ -415,7 +407,6 @@ function Body() {
   );
 }
 
-// --- Helpers ---
 
 function formatDuration(ms: number | null): string {
   if (ms == null) return "—";
@@ -443,7 +434,6 @@ function EmptyState() {
   );
 }
 
-// --- Span Tree View ---
 
 function SpanTree({
   spans,
@@ -557,7 +547,6 @@ function SpanTreeItem({
   );
 }
 
-// --- Waterfall View ---
 
 function WaterfallView({
   spans,
@@ -662,7 +651,6 @@ function WaterfallView({
   );
 }
 
-// --- Span Detail (Scroll-based tab navigation) ---
 
 function SpanDetail({ span }: { span: FlatSpan }) {
   const hasError = !!span.error;
@@ -847,6 +835,5 @@ function Attr({ label, value, mono }: { label: string; value: string; mono?: boo
   );
 }
 
-// --- Compound export ---
 
 export const TraceDetailPanel = { Root, Header, Body };

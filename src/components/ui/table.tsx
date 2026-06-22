@@ -72,8 +72,6 @@ const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTML
         ref={forwardedRef}
         className={cn(
           "group/row transition-colors",
-          // "hover:bg-bg-weak-50",
-          // "data-[selected=true]:bg-primary-alpha-10",
           className,
         )}
         {...rest}

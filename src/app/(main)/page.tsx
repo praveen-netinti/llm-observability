@@ -429,16 +429,6 @@ function WidgetLatencyDistribution() {
         badgeColor='gray'
         description='median (p50)'
       >
-        {/* <div className='text-label-xs text-text-soft-400 flex items-center gap-3'>
-          <span className='flex items-center gap-1'>
-            <span className='bg-information-base inline-block size-2 rounded-full' />
-            p50
-          </span>
-          <span className='flex items-center gap-1'>
-            <span className='bg-warning-base inline-block size-2 rounded-full' />
-            p95
-          </span>
-        </div> */}
 
         <Button.Root size='xsmall' variant='neutral' mode='stroke'>
           Details

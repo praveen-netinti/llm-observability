@@ -1,13 +1,11 @@
 import tracesJson from "@/data/traces.json";
 
 export type FlatSpan = {
-  // Span identity
   id: string;
   traceId: string;
   parentId: string | null;
   depth: number;
 
-  // Span details
   name: string;
   type: string;
   status: "success" | "error" | "running";
@@ -18,14 +16,12 @@ export type FlatSpan = {
   output: Record<string, unknown> | null;
   error: string | null;
 
-  // LLM-specific
   model: string | null;
   promptTokens: number | null;
   completionTokens: number | null;
   totalTokens: number | null;
   costUsd: number | null;
 
-  // Trace-level context (denormalized for filtering)
   traceName: string;
   traceStatus: "success" | "error" | "running";
   traceTags: string[];
@@ -41,7 +37,6 @@ export type FlatSpan = {
   traceFeedbackScore: number | null;
   traceFeedbackComment: string | null;
 
-  // Parent span context
   parentName: string | null;
   parentType: string | null;
 };

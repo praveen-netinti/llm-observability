@@ -403,11 +403,6 @@ export function IssuesTableView({ filter }: Props) {
                                 {React.createElement(STATUS_CONFIG[issue.status].icon, {
                                   className: cn("size-3.5", STATUS_CONFIG[issue.status].color),
                                 })}
-                                {/* <span className={cn("text-xs", STATUS_CONFIG[issue.status].color)}>
-                                  {React.createElement(STATUS_CONFIG[issue.status].icon, {
-                                    className: "size-4",
-                                  })}
-                                </span> */}
                               </Select.Trigger>
                               <Select.Content>
                                 {STATUS_OPTIONS.map((s) => (

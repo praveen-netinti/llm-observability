@@ -120,7 +120,6 @@ export default function Members() {
           <div className='flex flex-col justify-between px-5 lg:flex-row lg:items-center lg:px-0'>
             <div className='mb-3 flex items-center gap-3 lg:mb-0'>
               <div className='bg-bg-white-0 border-stroke-soft-200 flex size-10 items-center justify-center rounded-full border font-medium lg:size-8 xl:size-10'>
-                {/* <Logo className='size-5 text-green-600' /> */}
                 <Image
                   src='/neosigma-icon.png'
                   width={32}

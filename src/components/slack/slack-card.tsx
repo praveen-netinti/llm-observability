@@ -82,7 +82,7 @@ const ACTION_META: Record<
 function buttonTreatment(el: ButtonElement) {
   const meta = ACTION_META[el.action_id] ?? {};
   if (el.style === "primary")
-    return { variant: "primary" as const, mode: "filled" as const, ...stripUndefined(meta) };
+    return { variant: "neutral" as const, mode: "filled" as const, ...stripUndefined(meta) };
   if (el.style === "danger")
     return { variant: "error" as const, mode: "lighter" as const, ...stripUndefined(meta) };
   return { variant: meta.variant ?? "neutral", mode: meta.mode ?? "stroke", icon: meta.icon };

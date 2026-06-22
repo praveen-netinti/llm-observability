@@ -346,12 +346,12 @@ export default function TracesLayout() {
       icon: SlackLogo,
       iconClassName: "size-5",
       title: (
-        <div className='mb-4 flex items-center gap-1.5'>
-          <SlackLogo className='size-3.5' />
+        <div className='mb-2 flex items-center gap-1.5'>
+          {/* <SlackLogo className='size-3.5' /> */}
           <span className='text-text-strong-950 text-label-sm font-semibold'>Slack</span>
           <span className='bg-bg-soft-200 size-1 rounded-full' />
           <span className='text-text-soft-400 font-mono text-[11px]'>{channel}</span>
-          <span className='bg-success-base ml-1 size-1.5 animate-pulse rounded-full' />
+          {/* <span className='bg-success-base ml-1 size-1.5 animate-pulse rounded-full' /> */}
         </div>
       ),
       description: (

@@ -18,25 +18,20 @@
   </picture>
 </p>
 
-> A tracing & observability dashboard for LLM apps. It ingests a tree of traces
-> and spans (chains, tools, retrievers, LLM calls) and surfaces them through
-> aggregate metrics, a searchable trace list with a waterfall detail view, and a
-> Linear‑style issues workflow.
-
-The dataset is a static mock (`src/data/traces.json`, ~50 traces), so the whole
-thing runs with **no backend, no env vars, no setup**.
+> A tracing & observability dashboard for LLM apps — traces, spans, issues,
+> alerts, and analytics — built to feel like [Linear](https://linear.app).
+> Static mock data, **zero backend, zero setup**.
 
 ---
 
 ## Quick start
 
-Requires Node 18+ (developed on Node 24). [Bun](https://bun.sh) is the primary
-package manager — `bun.lock` is committed — but npm/pnpm/yarn work too.
-
 ```bash
 bun install        # or: npm install
-bun dev            # or: npm run dev   →  http://localhost:3000
+bun dev            # → http://localhost:3000
 ```
+
+Requires Node 18+. Bun is the primary package manager (`bun.lock` committed).
 
 | Task        | Command         |
 | ----------- | --------------- |
@@ -47,126 +42,101 @@ bun dev            # or: npm run dev   →  http://localhost:3000
 
 ---
 
-## What you can try
+## Testing guide
 
-Everything below is wired up against the mock data. Start at the **Dashboard**,
-then open **Traces** → click any row to see the waterfall.
+A suggested path through the app — start broad, then drill into interactions.
 
-| Page             | Route          | What to test                                                                                                                                                           |
-| ---------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Dashboard**    | `/`            | Metric tiles (traces, cost, tokens, error rate, p50/p95, satisfaction); latency histogram, cost‑by‑model, error‑rate & token trends, sparklines, environment breakdown |
-| **Traces**       | `/traces`      | Search, sort, and status‑filter the trace list; resizable split view                                                                                                   |
-| **Trace detail** | `/traces/[id]` | Hand‑built **waterfall** with overlapping/parallel bars and live "running" spans; click a span to inspect input/output, tokens & cost; prev/next trace nav             |
-| **Issues**       | `/issues`      | Toggle **list ↔ board (kanban)**; drag cards between columns; group & change display options; multi‑select rows (`⌘/Ctrl + A`); open an issue for detail               |
-| **Alerts**       | `/alerts`      | Slack‑style incident cards (alert → investigating → triage → resolved)                                                                                                 |
-| **Settings**     | modal          | Open from the profile / help menu; **Appearance → toggle light / dark**; browse the settings pages                                                                     |
+### 1. Global chrome & navigation
+
+- **Splash screen** — animated intro on first load (Framer Motion)
+- **Console banner** — open DevTools console for a styled ASCII banner
+- Press `⌘K` (or `/`) to open the **Command Menu** — fuzzy‑search across pages
+- Press `[` to collapse the sidebar to an icon rail; click again to expand
+- Navigate between pages: `G then D` (Dashboard), `G then T` (Traces), `G then I` (Issues), `G then A` (Alerts)
+- Open **Settings** via Profile Dropdown or `G then S`
+- Toggle **dark mode** from the Profile Dropdown or `⌘⇧L`
+- Press `⌘/` to open the **Keyboard Shortcuts drawer** (lists everything below)
+
+### 2. Dashboard (`/`)
+
+- Metric tiles: traces, cost, tokens, error rate, p50/p95 latency, satisfaction
+- Charts: latency histogram, cost‑by‑model, error‑rate & token trends, sparklines
+- Environment breakdown
+
+### 3. Traces (`/traces`)
+
+- **Search** by name; **filter** by status, environment, tags
+- **Keyboard nav**: `J/K` or `↓/↑` to move focus, `X` to select, `⌘A` select all, `Escape` clear
+- Click column headers to **sort**; use Display Options to **group** by status/environment
+- Hover a row → **"Open"** button appears; click it on an error trace to trigger a **Slack notification card**
+- **Detail panel** (resizable split): close with `Escape`, prev/next with `K/J`, copy trace ID with `⌘.`
+- Toggle between **Tree** and **Waterfall** views inside the detail panel
+- Tooltips on all header buttons show shortcut hints
+
+### 4. Issues (`/issues`)
+
+- **3 sub‑views**: All Issues, Active, Backlog (tab buttons)
+- **Display Options**: switch between **List** and **Board** (`⌘B`), change grouping, toggle columns
+- **List view**: hover reveals checkbox; `Shift+click` for range select; inline dropdowns for priority/status/assignee
+- **Board view (Kanban)**: drag‑and‑drop cards between columns
+- **Issue detail** (`/issues/[id]`): scrollable description with rendered markdown, metadata strip, accordions (Properties/Labels/Details), prev/next nav (`J/K`), copy ID (`⌘.`), copy URL (`⌘⇧/`)
+
+### 5. Alerts (`/alerts`)
+
+- Slack‑style incident cards with full lifecycle: alert → investigating → triage → resolved
+
+### 6. Settings (modal)
+
+- Open via Profile Dropdown → Settings or `G then S`
+- **Appearance** page: light/dark theme toggle
+- Browse: Organization, Members, Billing, Profile, Preferences, API Keys, etc.
 
 ---
 
 ## Keyboard shortcuts
 
-The app is fully keyboard‑accessible, modeled on [Linear](https://linear.app)'s
-shortcut design. All shortcuts are powered by
-[TanStack Hotkeys](https://tanstack.com/hotkeys) (`@tanstack/react-hotkeys`) and
-registered from a single source of truth (`src/config/shortcuts.ts`).
+Powered by [TanStack Hotkeys](https://tanstack.com/hotkeys) (`@tanstack/react-hotkeys`).
+All bindings live in `src/config/shortcuts.ts` (single source of truth).
 
-Press **⌘/** (or **Ctrl+/**) to open the **Keyboard Shortcuts drawer** at any time.
+Press **⌘/** to open the shortcuts drawer at any time.
 
-### General
-
-| Action                 | Shortcut     |
-| ---------------------- | ------------ |
-| Open command menu      | `⌘ K`        |
-| Open search            | `/`          |
-| View keyboard shortcuts| `⌘ /`        |
-| Open settings          | `G then S`   |
-| Toggle dark mode       | `⌘ ⇧ L`     |
-
-### Navigation
-
-| Action              | Shortcut     |
-| ------------------- | ------------ |
-| Go to Dashboard     | `G then D`   |
-| Go to Traces        | `G then T`   |
-| Go to Issues        | `G then I`   |
-| Go to Alerts        | `G then A`   |
-| Toggle left sidebar | `[`          |
-
-### List & Board
-
-| Action              | Shortcut     |
-| ------------------- | ------------ |
-| Move down           | `J` or `↓`  |
-| Move up             | `K` or `↑`  |
-| Select item         | `X`          |
-| Select all          | `⌘ A`       |
-| Clear selection     | `Escape`     |
-| Open focused item   | `Enter`      |
-| Toggle list/board   | `⌘ B`       |
-
-### Trace Detail
-
-| Action              | Shortcut     |
-| ------------------- | ------------ |
-| Close panel         | `Escape`     |
-| Previous trace      | `K`          |
-| Next trace          | `J`          |
-| Copy trace ID       | `⌘ .`       |
-
-### Issue Detail
-
-| Action              | Shortcut     |
-| ------------------- | ------------ |
-| Previous issue      | `K`          |
-| Next issue          | `J`          |
-| Copy issue ID       | `⌘ .`       |
-| Copy issue URL      | `⌘ ⇧ /`     |
-
----
-
-## Global interactions
-
-- **Command Menu** (`⌘/Ctrl + K` or `/`) — fuzzy jump between all pages
-- **Dark mode** — toggle from Profile Dropdown or `⌘⇧L`
-- **Settings Modal** — Profile Dropdown → Settings, or `G then S`
-- **Collapsible sidebar** — click the logo/rail or press `[`
-- **Splash screen** — animated intro on first visit (Framer Motion)
-- **Console easter‑egg** — open DevTools to see a styled ASCII banner
-- **Responsive** — mobile sidebar with hamburger toggle
-- **Tooltips with shortcut hints** — hover buttons in trace/issue detail to see bound keys
-
-### Issues (`/issues`)
-
-- **3 views** — All issues, Active issues, Backlog issues
-- **Display options** — switch list ↔ board (`⌘B`), grouping, column visibility
-- **List view** — hover reveals checkbox; `Shift+click` range select; `J/K` or arrow keys to navigate; `X` to toggle; inline priority/status/assignee dropdowns
-- **Board view (Kanban)** — full drag‑and‑drop between columns
-- **Issue detail** — prev/next nav (`J/K`), copy ID (`⌘.`), copy URL (`⌘⇧/`), Properties/Labels/Details accordions
-
-### Traces (`/traces`)
-
-- Search by name + multi‑field filter (status, environment, tags)
-- `J/K` or arrow keys to navigate rows; `X` to select; `⌘A` select all
-- Column sorting; grouping by status or environment
-- Click **Open** on an error trace → Slack notification card
-- **Detail panel** — close (`Escape`), prev/next (`K/J`), copy trace ID (`⌘.`); toggle Tree ↔ Waterfall view
-
-### Alerts (`/alerts`)
-
-- Slack‑style incident cards with lifecycle: alert → investigating → triage → resolved
+| | Action | Shortcut |
+|---|---|---|
+| **General** | Open command menu | `⌘ K` |
+| | Open search | `/` |
+| | View keyboard shortcuts | `⌘ /` |
+| | Open settings | `G then S` |
+| | Toggle dark mode | `⌘ ⇧ L` |
+| **Navigation** | Go to Dashboard | `G then D` |
+| | Go to Traces | `G then T` |
+| | Go to Issues | `G then I` |
+| | Go to Alerts | `G then A` |
+| | Toggle left sidebar | `[` |
+| **List & Board** | Move down / up | `J` `K` or `↓` `↑` |
+| | Select item | `X` |
+| | Select all | `⌘ A` |
+| | Clear selection | `Escape` |
+| | Open focused item | `Enter` |
+| | Toggle list/board | `⌘ B` |
+| **Trace Detail** | Close panel | `Escape` |
+| | Previous / Next trace | `K` / `J` |
+| | Copy trace ID | `⌘ .` |
+| **Issue Detail** | Previous / Next issue | `K` / `J` |
+| | Copy issue ID | `⌘ .` |
+| | Copy issue URL | `⌘ ⇧ /` |
 
 ---
 
 ## Editor (slash commands & markdown)
 
-The rich text editor (used in issue descriptions) supports a **slash command
-menu** — type `/` to trigger it. Each command shows its markdown shortcut.
+The rich text editor (issue descriptions) supports a **slash command menu** —
+type `/` to trigger. Each command shows its markdown shortcut inline.
 
 ### Slash Commands
 
-| Command | Shortcut |
-|---------|----------|
-| Text | `# →` |
+| Command | Markdown shortcut |
+|---------|-------------------|
+| Text | — |
 | To‑do List | `[] Space` |
 | Heading 1 | `# Space` |
 | Heading 2 | `## Space` |
@@ -181,6 +151,10 @@ menu** — type `/` to trigger it. Each command shows its markdown shortcut.
 
 | Syntax | Result |
 |--------|--------|
+| `**Text**` | Bold |
+| `_Text_` | Italic |
+| `~Text~` | Strikethrough |
+| `` `Code` `` | Inline code |
 | `# Space` | Heading 1 |
 | `## Space` | Heading 2 |
 | `### Space` | Heading 3 |
@@ -189,68 +163,35 @@ menu** — type `/` to trigger it. Each command shows its markdown shortcut.
 | `[] Space` | Checklist |
 | `> Space` | Blockquote |
 | `` ``` `` | Code block |
-| `**Text**` | Bold |
-| `_Text_` | Italic |
-| `~Text~` | Strikethrough |
-| `` `Code` `` | Inline code |
 | `*** Space` | Horizontal divider |
-
----
-
-## Splash screen & console banner
-
-**Splash screen** — on first visit the app plays a short animated intro
-(logo + product name) before revealing the dashboard. Built with Framer Motion;
-can be re‑enabled in `src/app/layout.tsx` by uncommenting `<SplashScreen>`.
-
-**Console banner** — open your browser's DevTools console to see a styled ASCII
-art banner with project info. Implemented in `src/components/console-banner.tsx`.
 
 ---
 
 ## Design thinking
 
-I went for the feel of [Linear](https://linear.app): quiet, dense, and fast — a
-tool you stare at all day that gets out of your way. Two posts shaped the
-direction directly: [A design reset (part I)](https://linear.app/now/a-design-reset)
-and [How we redesigned the Linear UI (part II)](https://linear.app/now/how-we-redesigned-the-linear-ui).
-The takeaways I actually built around:
+Inspired by [Linear](https://linear.app) — quiet, dense, and fast. Key
+principles applied:
 
-- **The inverted "L" chrome** — A persistent left sidebar plus a thin top header
-  frame every view; the content area is the only thing that changes. Headers are
-  a fixed `h-11`, the sidebar collapses to an icon rail, and nav density is high
-  but aligned. The chrome stays still so the data can move.
-- **Reduce noise, increase hierarchy** — Hairline borders, mostly flat surfaces,
-  and emphasis from type weight, spacing, and a single accent — not from boxes
-  and drop shadows. Linear calls this a "neutral and timeless" surface where
-  chrome color is deliberately restrained.
-- **Timeless over trendy** — A neutral gray base palette with one functional
-  accent. Color is reserved almost entirely for _status_ (success / error /
-  running) rather than decoration — status is the most important signal in an
-  observability tool, so it gets the color budget.
-- **Density with rhythm** — Tabular numerals for every metric, a mono face for
-  IDs/tokens/code, and tight but consistent vertical spacing so dense tables
-  stay scannable.
+- **Inverted "L" chrome** — persistent sidebar + thin top header; only the content area changes
+- **Noise reduction** — hairline borders, flat surfaces, emphasis via type weight and spacing — not shadows
+- **Color budget on status** — green/red/amber reserved for success/error/running; chrome is neutral gray
+- **Density with rhythm** — tabular numerals, mono face for IDs/code, tight consistent spacing
 
-**Type & identity.** Open Runde (a rounded geometric sans) for UI text and
-JetBrains Mono for IDs, token counts, and payloads — the rounded sans keeps the
-density from feeling cold while staying close to Linear's Inter‑Display
-character. The **splash screen, logo, and favicon were designed in Figma**, and
-I wireframed the core flows there (dashboard → trace list → trace detail, plus
-the issues list/board) before building.
+**Typography:** Open Runde (rounded geometric sans) for UI, JetBrains Mono for
+data. Splash screen, logo, and favicon designed in Figma.
 
 ---
 
-## Stack & build
+## Stack
 
-| Layer        | Choice                                                                                                          |
-| ------------ | --------------------------------------------------------------------------------------------------------------- |
-| Framework    | Next.js 16 (App Router) · React 19 · TypeScript                                                                 |
-| Styling      | Tailwind v4 with semantic CSS‑variable tokens (`bg-weak-50`, `text-strong-950`, `stroke-soft-200`)              |
-| Theming      | Light **and** dark via `next-themes`                                                                            |
-| Primitives   | **Radix UI** (dialog, popover, dropdown, tabs, select, tooltip, scroll‑area…)                                   |
-| Charts       | Recharts with custom tooltips; the trace waterfall is hand‑built                                                |
-| Interactions | `@dnd-kit` (kanban), `cmdk` (command palette), `motion` (splash/transitions), `@tanstack/react-hotkeys` (keys) |
+| Layer | Choice |
+|-------|--------|
+| Framework | Next.js 16 (App Router) · React 19 · TypeScript |
+| Styling | Tailwind v4 · semantic CSS‑variable tokens · light + dark via `next-themes` |
+| Primitives | Radix UI (dialog, popover, dropdown, tabs, select, tooltip, scroll‑area…) |
+| Charts | Recharts + hand‑built waterfall |
+| Interactions | `@dnd-kit` (kanban) · `cmdk` (command palette) · `motion` (animations) · `@tanstack/react-hotkeys` (shortcuts) |
+| Editor | Tiptap with slash commands, code highlighting (lowlight), tables |
 
 ---
 

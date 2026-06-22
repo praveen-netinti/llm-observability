@@ -87,7 +87,7 @@ A suggested path through the app — start broad, then drill into interactions.
 - **3 sub‑views**: All Issues, Active, Backlog (tab buttons)
 - **Display Options**: switch between **List** and **Board** (`⌘B`), change grouping, toggle columns
 - **List view**: hover reveals checkbox; `Shift+click` for range select; inline dropdowns for priority/status/assignee
-- **Board view (Kanban)**: drag‑and‑drop cards between columns
+- **Board view (Kanban)**: drag‑and‑drop cards between columns; inline status/priority/assignee dropdowns on each card
 - **Issue detail** (`/issues/[id]`): scrollable description with rendered markdown, metadata strip, accordions (Properties/Labels/Details), prev/next nav (`J/K`), copy ID (`⌘.`), copy URL (`⌘⇧/`)
 
 ### 5. Alerts (`/alerts`)

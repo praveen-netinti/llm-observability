@@ -111,7 +111,7 @@ export function IssuesBoardView({ filter }: Props) {
   };
 
   return (
-    <div className='no-scrollbar h-full overflow-x-auto overflow-y-hidden px-2.5 pb-2.5 text-[13px]'>
+    <div className='no-scrollbar h-full overflow-x-auto overflow-y-hidden px-2.5 pt-1 pb-2.5 text-[13px]'>
       <KanbanProvider
         columns={columns}
         data={kanbanData}
@@ -157,7 +157,7 @@ export function IssuesBoardView({ filter }: Props) {
                             {item.id}
                           </span>
                           {item.traceId && (
-                            <span className='text-text-disabled-300 text-[10px] font-mono'>
+                            <span className='text-text-disabled-300 font-mono text-[10px]'>
                               {item.traceId.replace("trace_", "")}
                             </span>
                           )}

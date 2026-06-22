@@ -122,7 +122,7 @@ export const KanbanCard = <T extends KanbanItemProps = KanbanItemProps>({
         <t.In>
           <Card
             className={cn(
-              "ring-primary-base cursor-grab gap-4 rounded-md p-3 shadow-sm ring-2",
+              "ring-stroke-sub-300 cursor-grab gap-4 rounded-md p-3 ring-1",
               isDragging && "cursor-grabbing",
               className,
             )}

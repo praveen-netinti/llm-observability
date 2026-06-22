@@ -45,7 +45,7 @@ const MainSidebar = forwardRef<MainSidebarRef>((_props, ref) => {
     <>
       <div
         className={cn(
-          "bg-bg-weak-50 fixed z-50 h-full transition-all duration-300 ease-in-out lg:relative lg:translate-x-0",
+          "bg-bg-weak-50 fixed z-50 h-full transition-all duration-300 ease-in-out lg:relative lg:translate-x-0 select-none",
           isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full",
           isSidebarCollapsed ? "w-18" : "w-full lg:w-60",
         )}

@@ -27,7 +27,7 @@ export function AppCommandMenu() {
   // Mod+K to toggle
   useHotkey("Mod+K", () => setOpen((v) => !v));
   // / to open search (only fires outside inputs thanks to smart ignoreInputs default)
-  useHotkey("/", () => setOpen(true), { preventDefault: false });
+  useHotkey("/", () => setOpen(true));
 
   const handleSelect = (href: string) => {
     setOpen(false);

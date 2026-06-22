@@ -727,13 +727,16 @@ export default function TracesLayout() {
               </Select.Root>
             </div>
 
-            <div className='no-scrollbar relative flex-1 overflow-auto p-2.5'>
-              <Table.Root>
+            <div className='no-scrollbar relative flex-1 overflow-auto px-2.5 pb-2.5'>
+              <Table.Root className='overflow-x-visible'>
                 <Table.Header>
                   {table.getHeaderGroups().map((headerGroup) => (
                     <Table.Row key={headerGroup.id}>
                       {headerGroup.headers.map((header) => (
-                        <Table.Head key={header.id}>
+                        <Table.Head
+                          key={header.id}
+                          className='bg-bg-white-0 sticky top-0 z-10'
+                        >
                           {header.isPlaceholder
                             ? null
                             : flexRender(header.column.columnDef.header, header.getContext())}

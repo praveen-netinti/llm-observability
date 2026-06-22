@@ -32,11 +32,17 @@ const NotificationViewport = React.forwardRef<
 ));
 NotificationViewport.displayName = "NotificationViewport";
 
-type NotificationProps = React.ComponentPropsWithoutRef<typeof NotificationPrimitives.Root> &
+type NotificationProps = Omit<
+  React.ComponentPropsWithoutRef<typeof NotificationPrimitives.Root>,
+  "title"
+> &
   Pick<React.ComponentPropsWithoutRef<typeof Alert.Root>, "status" | "variant"> & {
-    title?: string;
+    title?: React.ReactNode;
     description?: React.ReactNode;
     action?: React.ReactNode;
+    /** Optional custom leading icon; defaults to a status-derived icon. */
+    icon?: React.ElementType;
+    iconClassName?: string;
     disableDismiss?: boolean;
   };
 
@@ -52,6 +58,8 @@ const Notification = React.forwardRef<
       title,
       description,
       action,
+      icon,
+      iconClassName,
       disableDismiss = false,
       ...rest
     }: NotificationProps,
@@ -80,6 +88,9 @@ const Notification = React.forwardRef<
         break;
     }
 
+    // A caller-supplied icon takes precedence over the status-derived default.
+    const ResolvedIcon = icon ?? Icon;
+
     return (
       <NotificationPrimitives.Root
         ref={forwardedRef}
@@ -96,7 +107,7 @@ const Notification = React.forwardRef<
         {...rest}
       >
         <Alert.Root variant={variant} status={status} size='large'>
-          <Alert.Icon as={Icon} aria-hidden='true' />
+          <Alert.Icon as={ResolvedIcon} aria-hidden='true' className={iconClassName} />
           <div className='flex w-full flex-col gap-2.5 min-w-full'>
             <div className='flex w-full flex-col gap-1'>
               {title && (

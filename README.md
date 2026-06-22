@@ -24,12 +24,22 @@
 
 ## Table of contents
 
-- [Quick start](#quick-start)
-- [Testing guide](#testing-guide)
-- [Keyboard shortcuts](#keyboard-shortcuts)
-- [Editor (slash commands & markdown)](#editor-slash-commands--markdown)
-- [Design thinking](#design-thinking)
-- [Stack](#stack)
+- [NeoSigma — LLM Observability](#neosigma--llm-observability)
+  - [Table of contents](#table-of-contents)
+  - [Quick start](#quick-start)
+  - [Testing guide](#testing-guide)
+    - [1. Global chrome \& navigation](#1-global-chrome--navigation)
+    - [2. Dashboard (`/`)](#2-dashboard-)
+    - [3. Traces (`/traces`)](#3-traces-traces)
+    - [4. Issues (`/issues`)](#4-issues-issues)
+    - [5. Alerts (`/alerts`)](#5-alerts-alerts)
+    - [6. Settings (modal)](#6-settings-modal)
+  - [Keyboard shortcuts](#keyboard-shortcuts)
+  - [Editor (slash commands \& markdown)](#editor-slash-commands--markdown)
+    - [Slash Commands](#slash-commands)
+    - [Markdown Formatting](#markdown-formatting)
+  - [Design thinking](#design-thinking)
+  - [Stack](#stack)
 
 ---
 

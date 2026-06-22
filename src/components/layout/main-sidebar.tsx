@@ -99,6 +99,10 @@ const MainSidebar = forwardRef<MainSidebarRef>((_props, ref) => {
                     size='xsmall'
                     aria-label='Toggle Search'
                     className='group/search hover:bg-bg-soft-200 cursor-pointer'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
+                    }}
                   >
                     <Button.Icon
                       as={RiSearchLine}

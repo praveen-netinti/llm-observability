@@ -111,6 +111,10 @@ const TableCell = React.forwardRef<
         "first:rounded-l-xl last:rounded-r-xl",
         // Hover
         "group-hover/row:bg-bg-weak-50",
+        // During keyboard nav, suppress hover so only the active row shows
+        "group-data-[keyboard=true]/table-scroll:group-hover/row:bg-transparent",
+        // Keyboard-active row (cmdk-style highlight)
+        "group-data-[focused=true]/row:bg-bg-weak-50",
         // Selected
         "group-data-[selected=true]/row:bg-primary-base/5",
 

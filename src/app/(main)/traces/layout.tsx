@@ -6,30 +6,26 @@ import { useSidebar } from "@/contexts/sidebar-context";
 import slackCards from "@/data/slack-cards.json";
 import {
   RiArrowDownLongLine,
+  RiArrowDownSFill,
+  RiArrowRightSFill,
   RiArrowRightSLine,
   RiArrowUpDownLine,
   RiArrowUpLongLine,
   RiCheckboxCircleFill,
   RiCloseCircleFill,
-  RiFilter3Line,
+  RiCpuLine,
+  RiDeleteBinLine,
   RiFlaskLine,
   RiGitMergeLine,
   RiLayoutLeft2Line,
   RiLayoutRight2Line,
   RiLoader4Line,
   RiNotificationOffLine,
+  RiPriceTag3Line,
   RiSearchLine,
+  RiServerLine,
 } from "@remixicon/react";
-import {
-  Column,
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
-  type RowSelectionState,
-  type SortingState,
-} from "@tanstack/react-table";
+import { Column, type ColumnDef } from "@tanstack/react-table";
 import { usePathname, useRouter } from "next/navigation";
 
 import { FlatSpan, flatSpans } from "@/lib/flatten-traces";
@@ -45,10 +41,19 @@ import {
 import { SlackLogo } from "@/components/slack/slack-logo";
 // import { TimeRangeFilter } from "@/components/traces/time-range-filter";
 import { TraceDetailPanel } from "@/components/traces/trace-detail-panel";
+import {
+  TracesDisplayOptions,
+  type TracesGrouping,
+} from "@/components/traces/traces-display-options";
 import * as Badge from "@/components/ui/badge";
 import * as Breadcrumb from "@/components/ui/breadcrumb";
 import * as Button from "@/components/ui/button";
-import * as Checkbox from "@/components/ui/checkbox";
+import { DataTable, dataTableSelectColumn, useDataTable } from "@/components/ui/data-table";
+import {
+  DataTableFilter,
+  type FilterField,
+  type FilterValue,
+} from "@/components/ui/data-table-filter";
 import * as Input from "@/components/ui/input";
 import { plainText } from "@/components/ui/markdown";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
@@ -57,9 +62,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 //   SegmentedControlList,
 //   SegmentedControlTab,
 // } from "@/components/ui/segmented-control";
-import * as Select from "@/components/ui/select";
 import * as StatusBadge from "@/components/ui/status-badge";
-import * as Table from "@/components/ui/table";
 
 export function IconUserBox(props: SVGProps<SVGSVGElement>) {
   return (
@@ -217,6 +220,68 @@ const statusConfig = {
   running: { variant: "pending" as const, icon: RiLoader4Line, label: "Running" },
 };
 
+/* ---- Display-options + filter configuration (derived from the dataset) ---- */
+
+// Columns that can be toggled via Display options (status/name stay fixed).
+const TRACE_PROPERTIES: { id: string; label: string }[] = [
+  { id: "traceId", label: "Trace ID" },
+  { id: "startTime", label: "Start time" },
+  { id: "latency", label: "Latency" },
+  { id: "tokens", label: "Tokens" },
+  { id: "cost", label: "Cost" },
+  { id: "tags", label: "Tags" },
+];
+
+const ENVIRONMENT_VALUES = Array.from(
+  new Set(traceRows.map((r) => r.traceEnvironment).filter((e): e is string => !!e)),
+).sort();
+
+const TAG_VALUES = Array.from(new Set(traceRows.flatMap((r) => r.traceTags))).sort();
+
+const TRACE_FILTER_FIELDS: FilterField[] = [
+  {
+    id: "status",
+    label: "Status",
+    icon: RiLoader4Line,
+    type: "multi",
+    options: [
+      { value: "success", label: "Success" },
+      { value: "error", label: "Error" },
+      { value: "running", label: "Running" },
+    ],
+  },
+  {
+    id: "environment",
+    label: "Environment",
+    icon: RiServerLine,
+    type: "multi",
+    options: ENVIRONMENT_VALUES.map((e) => ({ value: e, label: e })),
+  },
+  {
+    id: "tags",
+    label: "Tags",
+    icon: RiPriceTag3Line,
+    type: "multi",
+    options: TAG_VALUES.map((t) => ({ value: t, label: t })),
+  },
+];
+
+const GROUP_ORDER: Record<Exclude<TracesGrouping, "none">, string[]> = {
+  status: ["error", "running", "success"],
+  environment: ENVIRONMENT_VALUES,
+};
+
+function groupKeyFor(row: FlatSpan, grouping: TracesGrouping): string {
+  if (grouping === "status") return row.traceStatus;
+  if (grouping === "environment") return row.traceEnvironment ?? "unknown";
+  return "all";
+}
+
+function groupLabelFor(grouping: TracesGrouping, key: string): string {
+  if (grouping === "status") return statusConfig[key as keyof typeof statusConfig]?.label ?? key;
+  return key;
+}
+
 const getSortingIcon = (state: "asc" | "desc" | false) => {
   if (state === "asc")
     return <RiArrowUpLongLine className='group-hover:text-text-strong-950 size-3' />;
@@ -248,50 +313,9 @@ export default function TracesLayout() {
   const router = useRouter();
   const { addIssue } = useIssues();
 
-  const [sorting, setSorting] = React.useState<SortingState>([{ id: "startTime", desc: true }]);
   const [search, setSearch] = React.useState("");
-  const [statusFilter, setStatusFilter] = React.useState<string>("all");
-  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
-
-  // Shift-click range selection (anchor + last applied range), mirroring the issues table.
-  const anchorRowId = React.useRef<string | null>(null);
-  const lastRangeIds = React.useRef<Set<string>>(new Set());
-
-  const toggleRowSelection = React.useCallback(
-    (id: string, shiftKey: boolean, orderedIds: string[]) => {
-      setRowSelection((prev) => {
-        const next: RowSelectionState = { ...prev };
-
-        if (shiftKey && anchorRowId.current) {
-          const anchorIdx = orderedIds.indexOf(anchorRowId.current);
-          const currentIdx = orderedIds.indexOf(id);
-
-          if (anchorIdx >= 0 && currentIdx >= 0) {
-            for (const rid of lastRangeIds.current) {
-              if (rid !== anchorRowId.current) delete next[rid];
-            }
-
-            const start = Math.min(anchorIdx, currentIdx);
-            const end = Math.max(anchorIdx, currentIdx);
-            const newRange = new Set<string>();
-            for (let i = start; i <= end; i++) {
-              next[orderedIds[i]] = true;
-              newRange.add(orderedIds[i]);
-            }
-            lastRangeIds.current = newRange;
-            return next;
-          }
-        }
-
-        if (next[id]) delete next[id];
-        else next[id] = true;
-        anchorRowId.current = id;
-        lastRangeIds.current = new Set();
-        return next;
-      });
-    },
-    [],
-  );
+  const [filterValue, setFilterValue] = React.useState<FilterValue>({});
+  const [grouping, setGrouping] = React.useState<TracesGrouping>("none");
 
   const showSlackAlert = (traceId: string) => {
     const card = slackCards.messages.find((m) => m.traceId === traceId && m.lifecycle === "alert");
@@ -322,8 +346,8 @@ export default function TracesLayout() {
       icon: SlackLogo,
       iconClassName: "size-5",
       title: (
-        <div className='flex items-center gap-1.5 mb-4'>
-          <SlackLogo className="size-3.5" />
+        <div className='mb-4 flex items-center gap-1.5'>
+          <SlackLogo className='size-3.5' />
           <span className='text-text-strong-950 text-label-sm font-semibold'>Slack</span>
           <span className='bg-bg-soft-200 size-1 rounded-full' />
           <span className='text-text-soft-400 font-mono text-[11px]'>{channel}</span>
@@ -429,56 +453,32 @@ export default function TracesLayout() {
         (r) => r.traceName.toLowerCase().includes(q) || r.name.toLowerCase().includes(q),
       );
     }
-    if (statusFilter !== "all") {
-      rows = rows.filter((r) => r.traceStatus === statusFilter);
+
+    const statusVals = filterValue.status ?? [];
+    if (statusVals.length > 0) {
+      rows = rows.filter((r) => statusVals.includes(r.traceStatus));
     }
+
+    const envVals = filterValue.environment ?? [];
+    if (envVals.length > 0) {
+      rows = rows.filter((r) => r.traceEnvironment != null && envVals.includes(r.traceEnvironment));
+    }
+
+    const tagVals = filterValue.tags ?? [];
+    if (tagVals.length > 0) {
+      rows = rows.filter((r) => r.traceTags.some((t) => tagVals.includes(t)));
+    }
+
     return rows;
-  }, [search, statusFilter]);
+  }, [search, filterValue]);
 
-  const columns: ColumnDef<FlatSpan>[] = useMemo(
+  const columns: ColumnDef<FlatSpan, unknown>[] = useMemo(
     () => [
-      {
-        id: "select",
-        cell: ({ row, table }) => (
-          <Checkbox.Root
-            checked={row.getIsSelected()}
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleRowSelection(
-                row.id,
-                e.shiftKey,
-                table.getRowModel().rows.map((r) => r.id),
-              );
-            }}
-            onCheckedChange={() => {}}
-            aria-label='Select row'
-            className={cn(
-              "transition-all duration-200 ease-out",
-              "opacity-0",
-
-              // Show on row hover
-              "group-hover/row:opacity-100",
-
-              // Keep visible when selected
-              "group-data-[selected=true]/row:opacity-100",
-
-              // Keep visible when keyboard focused
-              "focus-visible:opacity-100",
-
-              // Keep visible while interacting
-              "hover:opacity-100",
-
-              // Optional subtle scale animation
-              "scale-95 group-hover/row:scale-100 group-data-[selected=true]/row:scale-100",
-            )}
-          />
-        ),
-        enableSorting: false,
-        enableHiding: false,
-      },
+      dataTableSelectColumn<FlatSpan>(),
       {
         id: "status",
         accessorKey: "traceStatus",
+        enableHiding: false,
         header: () => <></>,
         cell: ({ row }) => {
           const cfg = statusConfig[row.original.traceStatus];
@@ -500,6 +500,7 @@ export default function TracesLayout() {
       {
         id: "name",
         accessorKey: "traceName",
+        enableHiding: false,
         header: ({ column }) => <DataColumnHeader column={column} label='Name' />,
         cell: ({ row }) => (
           <div className='relative w-full'>
@@ -507,8 +508,9 @@ export default function TracesLayout() {
 
             <button
               type='button'
-              className='border-stroke-soft-200 bg-bg-white-0 text-2xs text-text-sub-600 absolute inset-y-0 right-0 flex h-6 w-fit cursor-pointer items-center gap-1 rounded-md border px-1.5 uppercase opacity-0 group-hover/cell:opacity-100'
-              onClick={() => {
+              className='border-stroke-soft-200 bg-bg-white-0 text-2xs text-text-sub-600 absolute inset-y-0 right-0 flex h-6 w-fit cursor-pointer items-center gap-1 rounded-md border px-1.5 uppercase opacity-0 group-hover/row:opacity-100'
+              onClick={(e) => {
+                e.stopPropagation();
                 const trId = row.original.traceId;
                 router.push(`/traces/${trId}`);
                 if (row.original.traceStatus === "error") {
@@ -520,6 +522,16 @@ export default function TracesLayout() {
               Open
             </button>
           </div>
+        ),
+      },
+      {
+        id: "traceId",
+        accessorKey: "traceId",
+        header: ({ column }) => <DataColumnHeader label='Trace ID' column={column} />,
+        cell: ({ row }) => (
+          <span className='text-text-soft-400 px-2 font-mono text-[12px] whitespace-nowrap'>
+            {row.original.traceId.replace(/^trace_/, "")}
+          </span>
         ),
       },
       {
@@ -595,18 +607,18 @@ export default function TracesLayout() {
         ),
       },
     ],
-    [router, toggleRowSelection],
+    [router],
   );
 
-  const table = useReactTable({
+  const dataTable = useDataTable<FlatSpan>({
     data: filteredRows,
     columns,
     getRowId: (row) => row.id,
-    onSortingChange: setSorting,
-    onRowSelectionChange: setRowSelection,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    state: { sorting, rowSelection },
+    initialSorting: [{ id: "startTime", desc: true }],
+    keyboardScope: "page",
+    groupBy: grouping === "none" ? undefined : (row) => groupKeyFor(row, grouping),
+    groupOrder: grouping === "none" ? undefined : GROUP_ORDER[grouping],
+    onRowActivate: (row) => router.push(`/traces/${row.traceId}`),
   });
 
   return (
@@ -707,75 +719,80 @@ export default function TracesLayout() {
                 </Input.Wrapper>
               </Input.Root>
 
-              <Select.Root size='xxsmall' value={statusFilter} onValueChange={setStatusFilter}>
-                <Select.Trigger className='ml-auto w-fit gap-1'>
-                  <RiFilter3Line className='size-3.5' />
-                  <Select.Value placeholder='Status' />
-                </Select.Trigger>
-                <Select.Content align='end' className='w-35'>
-                  <Select.Item value='all'>All Status</Select.Item>
-                  <Select.Item value='success'>
-                    Success
-                  </Select.Item>
-                  <Select.Item value='error'>
-                    Error
-                  </Select.Item>
-                  <Select.Item value='running'>
-                    Running
-                  </Select.Item>
-                </Select.Content>
-              </Select.Root>
+              <div className='ml-auto flex items-center gap-1.5'>
+                <DataTableFilter
+                  fields={TRACE_FILTER_FIELDS}
+                  value={filterValue}
+                  onChange={setFilterValue}
+                />
+                <TracesDisplayOptions
+                  table={dataTable.table}
+                  grouping={grouping}
+                  onGroupingChange={setGrouping}
+                  properties={TRACE_PROPERTIES}
+                />
+              </div>
             </div>
 
-            <div className='no-scrollbar relative flex-1 overflow-auto px-2.5 pb-2.5'>
-              <Table.Root className='overflow-x-visible'>
-                <Table.Header>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <Table.Row key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => (
-                        <Table.Head
-                          key={header.id}
-                          className='bg-bg-white-0 sticky top-0 z-10'
-                        >
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(header.column.columnDef.header, header.getContext())}
-                        </Table.Head>
-                      ))}
-                    </Table.Row>
-                  ))}
-                </Table.Header>
-                <Table.Body>
-                  {table.getRowModel().rows.map((row, index, rows) => {
-                    const isSelected = row.getIsSelected();
-
-                    const prevSelected = rows[index - 1]?.getIsSelected() ?? false;
-                    const nextSelected = rows[index + 1]?.getIsSelected() ?? false;
-
-                    return (
-                      <Table.Row
-                        key={row.id}
-                        data-selected={isSelected || undefined}
-                        data-connected-top={(isSelected && prevSelected) || undefined}
-                        data-connected-bottom={(isSelected && nextSelected) || undefined}
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <Table.Cell
-                            key={cell.id}
+            <DataTable
+              instance={dataTable}
+              actionBar={
+                <DataTable.ActionBar>
+                  <TraceBulkActions
+                    selectedRows={dataTable.selectedRows}
+                    clear={dataTable.clearSelection}
+                  />
+                </DataTable.ActionBar>
+              }
+            >
+              <DataTable.Header />
+              <DataTable.Body<FlatSpan>
+                cellClassName={(row) =>
+                  cn("text-[13px]", traceId === row.original.traceId && "bg-bg-weak-50")
+                }
+                renderGroupHeader={({ groupKey, count, collapsed, toggle, index }) => (
+                  <div
+                    className={cn(
+                      "bg-bg-weak-50 flex h-9 w-full items-center gap-2 rounded-lg px-2 text-[13px]",
+                      index !== 0 && "mt-1",
+                    )}
+                  >
+                    <Button.Root
+                      variant='neutral'
+                      mode='ghost'
+                      size='xxsmall'
+                      className='size-5 p-0'
+                      onClick={toggle}
+                    >
+                      {collapsed ? (
+                        <RiArrowRightSFill className='text-text-strong-950 size-4' />
+                      ) : (
+                        <RiArrowDownSFill className='text-text-soft-400 size-4' />
+                      )}
+                    </Button.Root>
+                    {grouping === "status" &&
+                      (() => {
+                        const cfg = statusConfig[groupKey as keyof typeof statusConfig];
+                        return cfg ? (
+                          <StatusBadge.Icon
+                            as={cfg.icon}
                             className={cn(
-                              "group/cell text-[13px]",
-                              traceId === row.original.traceId && "bg-bg-weak-50",
+                              "size-3.5",
+                              cfg.variant === "completed" && "text-success-base",
+                              cfg.variant === "pending" && "text-warning-base",
+                              cfg.variant === "failed" && "text-error-base",
                             )}
-                          >
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </Table.Cell>
-                        ))}
-                      </Table.Row>
-                    );
-                  })}
-                </Table.Body>
-              </Table.Root>
-            </div>
+                          />
+                        ) : null;
+                      })()}
+                    <span className='text-text-strong-950 capitalize'>
+                      {groupLabelFor(grouping, groupKey)}
+                    </span>
+                    <span className='text-text-soft-400 font-mono'>{count}</span>
+                  </div>
+                )}
+              />
+            </DataTable>
           </div>
         </ResizablePanel>
 
@@ -797,5 +814,71 @@ export default function TracesLayout() {
         )}
       </ResizablePanelGroup>
     </div>
+  );
+}
+
+
+function TraceBulkActions({
+  selectedRows,
+  clear,
+}: {
+  selectedRows: FlatSpan[];
+  clear: () => void;
+}) {
+  const { addIssue } = useIssues();
+
+  const createIssues = () => {
+    let created = 0;
+    for (const trace of selectedRows) {
+      addIssue({
+        title: `Investigate ${trace.traceName}`,
+        description: trace.error ?? "Flagged from the traces table.",
+        status: "todo",
+        priority: trace.traceStatus === "error" ? "high" : "medium",
+        assignee: null,
+        labels: trace.traceStatus === "error" ? ["bug"] : ["improvement"],
+        project: null,
+        traceId: trace.traceId,
+      });
+      created++;
+    }
+    notification({
+      status: "success",
+      variant: "stroke",
+      title: created > 1 ? `${created} issues created` : "Issue created",
+      description: "Opened from the selected traces.",
+      duration: 4000,
+    });
+    clear();
+  };
+
+  const addToEvalSet = () => {
+    notification({
+      status: "feature",
+      variant: "stroke",
+      title: "Added to eval set",
+      description: `${selectedRows.length} ${selectedRows.length === 1 ? "trace" : "traces"} added to the evaluation set.`,
+      duration: 4000,
+    });
+    clear();
+  };
+
+  const single = selectedRows.length === 1;
+
+  return (
+    <>
+      <Button.Root variant='neutral' mode='stroke' size='xxsmall' onClick={addToEvalSet}>
+        <Button.Icon as={RiFlaskLine} className='size-3.5' />
+        Add to eval set
+      </Button.Root>
+      <Button.Root variant='neutral' mode='stroke' size='xxsmall' onClick={createIssues}>
+        <Button.Icon as={RiCpuLine} className='size-3.5' />
+        {single ? "Create issue" : "Create issues"}
+      </Button.Root>
+      <Button.Root variant='error' mode='lighter' size='xxsmall' onClick={clear}>
+        <Button.Icon as={RiDeleteBinLine} className='size-3.5' />
+        Clear
+      </Button.Root>
+    </>
   );
 }

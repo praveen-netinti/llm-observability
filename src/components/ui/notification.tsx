@@ -24,7 +24,7 @@ const NotificationViewport = React.forwardRef<
   <NotificationPrimitives.Viewport
     ref={forwardedRef}
     className={cn(
-      "fixed top-0 left-0 z-100 flex max-h-screen w-full flex-col-reverse gap-5 p-4 sm:top-auto sm:right-0 sm:bottom-0 sm:left-auto sm:max-w-109.5 sm:flex-col sm:p-6",
+      "fixed top-0 left-0 z-100 flex max-h-screen w-full flex-col-reverse gap-5 p-4 sm:top-auto sm:right-0 sm:bottom-0 sm:left-auto sm:max-w-[438px] sm:flex-col sm:p-6",
       className,
     )}
     {...rest}
@@ -32,19 +32,12 @@ const NotificationViewport = React.forwardRef<
 ));
 NotificationViewport.displayName = "NotificationViewport";
 
-type NotificationProps = Omit<
-  React.ComponentPropsWithoutRef<typeof NotificationPrimitives.Root>,
-  "title"
-> &
+type NotificationProps = React.ComponentPropsWithoutRef<typeof NotificationPrimitives.Root> &
   Pick<React.ComponentPropsWithoutRef<typeof Alert.Root>, "status" | "variant"> & {
-    title?: React.ReactNode;
+    title?: string;
     description?: React.ReactNode;
     action?: React.ReactNode;
     disableDismiss?: boolean;
-    /** Override the leading status icon (e.g. a brand logo). */
-    icon?: React.ElementType;
-    /** Extra classes for the leading icon. */
-    iconClassName?: string;
   };
 
 const Notification = React.forwardRef<
@@ -60,8 +53,6 @@ const Notification = React.forwardRef<
       description,
       action,
       disableDismiss = false,
-      icon,
-      iconClassName,
       ...rest
     }: NotificationProps,
     forwardedRef,
@@ -89,8 +80,6 @@ const Notification = React.forwardRef<
         break;
     }
 
-    if (icon) Icon = icon;
-
     return (
       <NotificationPrimitives.Root
         ref={forwardedRef}
@@ -106,13 +95,9 @@ const Notification = React.forwardRef<
         asChild
         {...rest}
       >
-        <Alert.Root
-          variant={variant}
-          status={status}
-          size='large'
-          className='shadow-custom-lg border-none ring-transparent'
-        >
-          <div className='flex w-full flex-col gap-2.5'>
+        <Alert.Root variant={variant} status={status} size='large'>
+          <Alert.Icon as={Icon} aria-hidden='true' />
+          <div className='flex w-full flex-col gap-2.5 min-w-full'>
             <div className='flex w-full flex-col gap-1'>
               {title && (
                 <NotificationPrimitives.Title className='text-label-sm'>

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useSettings } from "@/contexts/settings-context";
 import {
   RiAddLine,
   RiArrowDownSLine,
@@ -12,11 +13,12 @@ import {
 } from "@remixicon/react";
 import { useTheme } from "next-themes";
 
+import { notification } from "@/hooks/use-notification";
+
 import * as Button from "@/components/ui/button";
 import * as Divider from "@/components/ui/divider";
 import * as Dropdown from "@/components/ui/dropdown";
 import * as Switch from "@/components/ui/switch";
-import { useSettings } from "@/contexts/settings-context";
 
 export function ProfileDropdown() {
   const { theme, setTheme } = useTheme();
@@ -63,7 +65,7 @@ export function ProfileDropdown() {
         <Divider.Root variant='line-spacing' className='py-1.5' />
 
         <Dropdown.Group>
-          <Dropdown.Item>
+          <Dropdown.Item onSelect={() => openSettings("profile")}>
             <Dropdown.ItemIcon as={RiPulseLine} />
             Activity
           </Dropdown.Item>
@@ -74,11 +76,31 @@ export function ProfileDropdown() {
         </Dropdown.Group>
         <Divider.Root variant='line-spacing' className='py-1.5' />
         <Dropdown.Group>
-          <Dropdown.Item>
+          <Dropdown.Item
+            onSelect={() => {
+              notification({
+                status: "information",
+                variant: "stroke",
+                title: "Coming soon",
+                description: "Multi-account support is on the roadmap.",
+                duration: 3000,
+              });
+            }}
+          >
             <Dropdown.ItemIcon as={RiAddLine} />
             Add Account
           </Dropdown.Item>
-          <Dropdown.Item>
+          <Dropdown.Item
+            onSelect={() => {
+              notification({
+                status: "success",
+                variant: "stroke",
+                title: "Logged out",
+                description: "You have been signed out successfully.",
+                duration: 3000,
+              });
+            }}
+          >
             <Dropdown.ItemIcon as={RiLogoutBoxRLine} />
             Logout
             <span className='text-2xs text-text-sub-600 ml-auto'>⌥ ⇧ Q</span>

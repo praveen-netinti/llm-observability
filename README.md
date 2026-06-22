@@ -100,30 +100,30 @@ All bindings live in `src/config/shortcuts.ts` (single source of truth).
 
 Press **⌘/** to open the shortcuts drawer at any time.
 
-| | Action | Shortcut |
-|---|---|---|
-| **General** | Open command menu | `⌘ K` |
-| | Open search | `/` |
-| | View keyboard shortcuts | `⌘ /` |
-| | Open settings | `G then S` |
-| | Toggle dark mode | `⌘ ⇧ L` |
-| **Navigation** | Go to Dashboard | `G then D` |
-| | Go to Traces | `G then T` |
-| | Go to Issues | `G then I` |
-| | Go to Alerts | `G then A` |
-| | Toggle left sidebar | `[` |
-| **List & Board** | Move down / up | `J` `K` or `↓` `↑` |
-| | Select item | `X` |
-| | Select all | `⌘ A` |
-| | Clear selection | `Escape` |
-| | Open focused item | `Enter` |
-| | Toggle list/board | `⌘ B` |
-| **Trace Detail** | Close panel | `Escape` |
-| | Previous / Next trace | `K` / `J` |
-| | Copy trace ID | `⌘ .` |
-| **Issue Detail** | Previous / Next issue | `K` / `J` |
-| | Copy issue ID | `⌘ .` |
-| | Copy issue URL | `⌘ ⇧ /` |
+|                  | Action                  | Shortcut           |
+| ---------------- | ----------------------- | ------------------ |
+| **General**      | Open command menu       | `⌘ K`              |
+|                  | Open search             | `/`                |
+|                  | View keyboard shortcuts | `⌘ /`              |
+|                  | Open settings           | `G then S`         |
+|                  | Toggle dark mode        | `⌘ ⇧ L`            |
+| **Navigation**   | Go to Dashboard         | `G then D`         |
+|                  | Go to Traces            | `G then T`         |
+|                  | Go to Issues            | `G then I`         |
+|                  | Go to Alerts            | `G then A`         |
+|                  | Toggle left sidebar     | `[`                |
+| **List & Board** | Move down / up          | `J` `K` or `↓` `↑` |
+|                  | Select item             | `X`                |
+|                  | Select all              | `⌘ A`              |
+|                  | Clear selection         | `Escape`           |
+|                  | Open focused item       | `Enter`            |
+|                  | Toggle list/board       | `⌘ B`              |
+| **Trace Detail** | Close panel             | `Escape`           |
+|                  | Previous / Next trace   | `K` / `J`          |
+|                  | Copy trace ID           | `⌘ .`              |
+| **Issue Detail** | Previous / Next issue   | `K` / `J`          |
+|                  | Copy issue ID           | `⌘ .`              |
+|                  | Copy issue URL          | `⌘ ⇧ /`            |
 
 ---
 
@@ -134,43 +134,46 @@ type `/` to trigger. Each command shows its markdown shortcut inline.
 
 ### Slash Commands
 
-| Command | Markdown shortcut |
-|---------|-------------------|
-| Text | — |
-| To‑do List | `[] Space` |
-| Heading 1 | `# Space` |
-| Heading 2 | `## Space` |
-| Heading 3 | `### Space` |
-| Bullet List | `- Space` |
-| Numbered List | `1. Space` |
-| Quote | `> Space` |
-| Code | `` ``` Enter `` |
-| Table | `/table` |
+| Command       | Markdown shortcut |
+| ------------- | ----------------- |
+| Text          | —                 |
+| To‑do List    | `[] Space`        |
+| Heading 1     | `# Space`         |
+| Heading 2     | `## Space`        |
+| Heading 3     | `### Space`       |
+| Bullet List   | `- Space`         |
+| Numbered List | `1. Space`        |
+| Quote         | `> Space`         |
+| Code          | ` ``` Enter `     |
+| Table         | `/table`          |
 
 ### Markdown Formatting
 
-| Syntax | Result |
-|--------|--------|
-| `**Text**` | Bold |
-| `_Text_` | Italic |
-| `~Text~` | Strikethrough |
-| `` `Code` `` | Inline code |
-| `# Space` | Heading 1 |
-| `## Space` | Heading 2 |
-| `### Space` | Heading 3 |
-| `- Space` | Bulleted list |
-| `1. Space` | Numbered list |
-| `[] Space` | Checklist |
-| `> Space` | Blockquote |
-| `` ``` `` | Code block |
-| `*** Space` | Horizontal divider |
+| Syntax       | Result             |
+| ------------ | ------------------ |
+| `**Text**`   | Bold               |
+| `_Text_`     | Italic             |
+| `~Text~`     | Strikethrough      |
+| `` `Code` `` | Inline code        |
+| `# Space`    | Heading 1          |
+| `## Space`   | Heading 2          |
+| `### Space`  | Heading 3          |
+| `- Space`    | Bulleted list      |
+| `1. Space`   | Numbered list      |
+| `[] Space`   | Checklist          |
+| `> Space`    | Blockquote         |
+| ` ``` `      | Code block         |
+| `*** Space`  | Horizontal divider |
 
 ---
 
 ## Design thinking
 
-Inspired by [Linear](https://linear.app) — quiet, dense, and fast. Key
-principles applied:
+Inspired by [Linear](https://linear.app) — quiet, dense, and fast. Shaped
+directly by two posts:
+[A design reset (part I)](https://linear.app/blog/a-design-reset) and
+[How we redesigned the Linear UI (part II)](https://linear.app/blog/how-we-redesigned-the-linear-ui).
+Key principles applied:
 
 - **Inverted "L" chrome** — persistent sidebar + thin top header; only the content area changes
 - **Noise reduction** — hairline borders, flat surfaces, emphasis via type weight and spacing — not shadows
@@ -184,14 +187,14 @@ data. Splash screen, logo, and favicon designed in Figma.
 
 ## Stack
 
-| Layer | Choice |
-|-------|--------|
-| Framework | Next.js 16 (App Router) · React 19 · TypeScript |
-| Styling | Tailwind v4 · semantic CSS‑variable tokens · light + dark via `next-themes` |
-| Primitives | Radix UI (dialog, popover, dropdown, tabs, select, tooltip, scroll‑area…) |
-| Charts | Recharts + hand‑built waterfall |
+| Layer        | Choice                                                                                                         |
+| ------------ | -------------------------------------------------------------------------------------------------------------- |
+| Framework    | Next.js 16 (App Router) · React 19 · TypeScript                                                                |
+| Styling      | Tailwind v4 · semantic CSS‑variable tokens · light + dark via `next-themes`                                    |
+| Primitives   | Radix UI (dialog, popover, dropdown, tabs, select, tooltip, scroll‑area…)                                      |
+| Charts       | Recharts + hand‑built waterfall                                                                                |
 | Interactions | `@dnd-kit` (kanban) · `cmdk` (command palette) · `motion` (animations) · `@tanstack/react-hotkeys` (shortcuts) |
-| Editor | Tiptap with slash commands, code highlighting (lowlight), tables |
+| Editor       | Tiptap with slash commands, code highlighting (lowlight), tables                                               |
 
 ---
 

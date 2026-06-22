@@ -1,20 +1,18 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import { useRouter } from 'next/navigation';
+import * as React from "react";
 import {
   RiArrowDownLine,
   RiArrowUpLine,
   RiCloseLine,
   RiCornerDownLeftLine,
-  RiSearch2Line,
-} from '@remixicon/react';
+} from "@remixicon/react";
+import { useRouter } from "next/navigation";
 
-import * as CommandMenu from '@/components/ui/command-menu';
-import * as CompactButton from '@/components/ui/compact-button';
-import * as Kbd from '@/components/ui/kbd';
-import { cn } from '@/utils/cn';
-import { sidebarData } from '@/components/layout/sidebar/sidebar-data';
+import { sidebarData } from "@/components/layout/sidebar/sidebar-data";
+import * as CommandMenu from "@/components/ui/command-menu";
+import * as CompactButton from "@/components/ui/compact-button";
+import * as Kbd from "@/components/ui/kbd";
 
 export function AppCommandMenu() {
   const [open, setOpen] = React.useState(false);
@@ -22,14 +20,14 @@ export function AppCommandMenu() {
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         setOpen((open) => !open);
       }
     };
 
-    document.addEventListener('keydown', down);
-    return () => document.removeEventListener('keydown', down);
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
   }, []);
 
   const handleSelect = (href: string) => {
@@ -39,15 +37,15 @@ export function AppCommandMenu() {
 
   return (
     <CommandMenu.Dialog open={open} onOpenChange={setOpen}>
-      <div className='group/cmd-input bg-bg-white-0 flex h-12 w-full items-center gap-2 px-5'>
-        <RiSearch2Line
+      <div className='group/cmd-input bg-bg-white-0 flex h-12 w-full items-center gap-2 border-transparent px-5'>
+        {/* <RiSearch2Line
           className={cn(
             'text-text-soft-400 size-5 shrink-0',
             'transition duration-200 ease-out',
             'group-focus-within/cmd-input:text-primary-base',
           )}
-        />
-        <CommandMenu.Input placeholder='Search pages...' />
+        /> */}
+        <CommandMenu.Input placeholder='Type a command or search...' />
         <Kbd.Root>
           <svg
             width='19'
@@ -70,6 +68,7 @@ export function AppCommandMenu() {
           size='medium'
           variant='ghost'
           onClick={() => setOpen(false)}
+          className='rounded-full'
         >
           <CompactButton.Icon as={RiCloseLine} />
         </CompactButton.Root>
@@ -77,15 +76,9 @@ export function AppCommandMenu() {
 
       <CommandMenu.List>
         {sidebarData.sections.map((section) => (
-          <CommandMenu.Group
-            key={section.id}
-            heading={section.title ?? 'Pages'}
-          >
+          <CommandMenu.Group key={section.id} heading={section.title ?? "Pages"}>
             {section.items.map((item) => (
-              <CommandMenu.Item
-                key={item.id}
-                onSelect={() => handleSelect(item.href)}
-              >
+              <CommandMenu.Item key={item.id} onSelect={() => handleSelect(item.href)}>
                 <CommandMenu.ItemIcon as={item.icon} />
                 {item.label}
               </CommandMenu.Item>
@@ -103,17 +96,13 @@ export function AppCommandMenu() {
             <CommandMenu.FooterKeyBox>
               <RiArrowDownLine className='size-4' />
             </CommandMenu.FooterKeyBox>
-            <span className='text-paragraph-xs text-text-sub-600'>
-              Navigate
-            </span>
+            <span className='text-paragraph-xs text-text-sub-600'>Navigate</span>
           </div>
           <div className='flex items-center gap-2'>
             <CommandMenu.FooterKeyBox>
               <RiCornerDownLeftLine className='size-4' />
             </CommandMenu.FooterKeyBox>
-            <span className='text-paragraph-xs text-text-sub-600'>
-              Select
-            </span>
+            <span className='text-paragraph-xs text-text-sub-600'>Select</span>
           </div>
         </div>
       </CommandMenu.Footer>

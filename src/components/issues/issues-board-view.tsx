@@ -7,6 +7,7 @@ import { RiAddLine } from "@remixicon/react";
 import { useRouter } from "next/navigation";
 
 import {
+  ASSIGNEE_OPTIONS,
   PRIORITY_OPTIONS,
   STATUS_OPTIONS,
   type Issue,
@@ -19,6 +20,7 @@ import type { GroupingOption } from "@/components/issues/display-options";
 import {
   getAvatarColor,
   getInitials,
+  IconNoAssignee,
   PRIORITY_CONFIG,
   STATUS_CONFIG,
 } from "@/components/issues/issue-config";
@@ -30,6 +32,7 @@ import {
   KanbanProvider,
 } from "@/components/kibo-ui/kanban";
 import * as Button from "@/components/ui/button";
+import * as Select from "@/components/ui/select";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -160,31 +163,119 @@ export function IssuesBoardView({ filter }: Props) {
                           )}
                         </div>
                         <div className='mt-1 flex items-start gap-1.5'>
-                          <span className={cn("mt-1 text-xs", STATUS_CONFIG[item.status].color)}>
-                            {React.createElement(STATUS_CONFIG[item.status].icon, {
-                              className: "size-3",
-                            })}
-                          </span>
+                          <div className='mt-0.5' onClick={(e) => e.stopPropagation()}>
+                            <Select.Root
+                              size='xxsmall'
+                              value={item.status}
+                              onValueChange={(v) =>
+                                updateIssue(item.id, { status: v as IssueStatus })
+                              }
+                            >
+                              <Select.Trigger
+                                showArrow={false}
+                                className='grid h-5 w-5 place-items-center border-none bg-transparent! p-0 shadow-none ring-0 hover:bg-transparent!'
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {React.createElement(STATUS_CONFIG[item.status].icon, {
+                                  className: cn("size-3", STATUS_CONFIG[item.status].color),
+                                })}
+                              </Select.Trigger>
+                              <Select.Content>
+                                {STATUS_OPTIONS.map((s) => (
+                                  <Select.Item key={s.value} value={s.value}>
+                                    <span className={STATUS_CONFIG[s.value].color}>
+                                      {React.createElement(STATUS_CONFIG[s.value].icon, {
+                                        className: "size-4",
+                                      })}
+                                    </span>{" "}
+                                    {s.label}
+                                  </Select.Item>
+                                ))}
+                              </Select.Content>
+                            </Select.Root>
+                          </div>
                           <p className='text-text-strong-950 m-0 line-clamp-2 flex-1 text-[13px]'>
                             {item.title}
                           </p>
                         </div>
                       </div>
-                      {item.assignee && (
-                        <div
-                          className={cn(
-                            "flex size-4.5 shrink-0 items-center justify-center rounded-full text-[9px] font-medium",
-                            getAvatarColor(item.assignee),
-                          )}
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <Select.Root
+                          size='xxsmall'
+                          value={item.assignee ?? "unassigned"}
+                          onValueChange={(v) =>
+                            updateIssue(item.id, { assignee: v === "unassigned" ? null : v })
+                          }
                         >
-                          {getInitials(item.assignee)}
-                        </div>
-                      )}
+                          <Select.Trigger
+                            showArrow={false}
+                            className='h-5 w-fit border-none bg-transparent p-0 shadow-none ring-0 hover:bg-transparent'
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {item.assignee ? (
+                              <div
+                                className={cn(
+                                  "flex size-4.5 items-center justify-center rounded-full text-[9px] font-medium",
+                                  getAvatarColor(item.assignee),
+                                )}
+                              >
+                                {getInitials(item.assignee)}
+                              </div>
+                            ) : (
+                              <IconNoAssignee className='text-text-soft-400 size-4' />
+                            )}
+                          </Select.Trigger>
+                          <Select.Content align='end'>
+                            <Select.Item value='unassigned'>
+                              <IconNoAssignee className='text-text-soft-400 size-4' /> No assignee
+                            </Select.Item>
+                            {ASSIGNEE_OPTIONS.map((a) => (
+                              <Select.Item key={a} value={a}>
+                                <div
+                                  className={cn(
+                                    "flex size-4.5 items-center justify-center rounded-full text-[9px] font-medium",
+                                    getAvatarColor(a),
+                                  )}
+                                >
+                                  {getInitials(a)}
+                                </div>
+                                {a}
+                              </Select.Item>
+                            ))}
+                          </Select.Content>
+                        </Select.Root>
+                      </div>
                     </div>
-                    <div className={cn("text-xs", PRIORITY_CONFIG[item.priority].color)}>
-                      {React.createElement(PRIORITY_CONFIG[item.priority].icon, {
-                        className: "size-3.5",
-                      })}
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <Select.Root
+                        size='xxsmall'
+                        value={item.priority}
+                        onValueChange={(v) =>
+                          updateIssue(item.id, { priority: v as IssuePriority })
+                        }
+                      >
+                        <Select.Trigger
+                          showArrow={false}
+                          className='grid h-5 w-5 place-items-center border-none bg-transparent! p-0 shadow-none ring-0 hover:bg-transparent!'
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {React.createElement(PRIORITY_CONFIG[item.priority].icon, {
+                            className: cn("size-3.5", PRIORITY_CONFIG[item.priority].color),
+                          })}
+                        </Select.Trigger>
+                        <Select.Content>
+                          {PRIORITY_OPTIONS.map((p) => (
+                            <Select.Item key={p.value} value={p.value}>
+                              <span className={PRIORITY_CONFIG[p.value].color}>
+                                {React.createElement(PRIORITY_CONFIG[p.value].icon, {
+                                  className: "size-4",
+                                })}
+                              </span>{" "}
+                              {p.label}
+                            </Select.Item>
+                          ))}
+                        </Select.Content>
+                      </Select.Root>
                     </div>
                     <div className='text-label-xs text-text-soft-400'>
                       Created {formatDate(item.createdAt)}

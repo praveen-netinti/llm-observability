@@ -159,7 +159,7 @@ function StatTiles() {
           key={tile.title}
           className={cn(
             "flex flex-col rounded-xl border p-3 transition-colors",
-            "border-stroke-soft-200 bg-bg-white-0 hover:border-stroke-soft-200 hover:bg-bg-weak-50",
+            "border-faded-lighter bg-bg-white-0 hover:border-stroke-soft-200 hover:bg-bg-weak-50",
           )}
         >
           <span className='text-label-xs text-text-soft-400'>{tile.title}</span>

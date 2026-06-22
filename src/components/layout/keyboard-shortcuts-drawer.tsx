@@ -83,7 +83,7 @@ export function KeyboardShortcutsDrawer({
                     <span className="text-text-strong-950 text-[13px]">
                       {md.label}
                     </span>
-                    <code className="text-2xs text-text-soft-400 font-mono bg-bg-soft-200 rounded px-1.5 py-0.5">
+                    <code className="text-2xs text-text-soft-400 font-mono rounded px-1.5">
                       {md.syntax}
                     </code>
                   </div>

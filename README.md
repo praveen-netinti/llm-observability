@@ -157,6 +157,46 @@ Press **⌘/** (or **Ctrl+/**) to open the **Keyboard Shortcuts drawer** at any 
 
 ---
 
+## Editor (slash commands & markdown)
+
+The rich text editor (used in issue descriptions) supports a **slash command
+menu** — type `/` to trigger it. Each command shows its markdown shortcut.
+
+### Slash Commands
+
+| Command | Shortcut |
+|---------|----------|
+| Text | `# →` |
+| To‑do List | `[] Space` |
+| Heading 1 | `# Space` |
+| Heading 2 | `## Space` |
+| Heading 3 | `### Space` |
+| Bullet List | `- Space` |
+| Numbered List | `1. Space` |
+| Quote | `> Space` |
+| Code | `` ``` Enter `` |
+| Table | `/table` |
+
+### Markdown Formatting
+
+| Syntax | Result |
+|--------|--------|
+| `# Space` | Heading 1 |
+| `## Space` | Heading 2 |
+| `### Space` | Heading 3 |
+| `- Space` | Bulleted list |
+| `1. Space` | Numbered list |
+| `[] Space` | Checklist |
+| `> Space` | Blockquote |
+| `` ``` `` | Code block |
+| `**Text**` | Bold |
+| `_Text_` | Italic |
+| `~Text~` | Strikethrough |
+| `` `Code` `` | Inline code |
+| `*** Space` | Horizontal divider |
+
+---
+
 ## Splash screen & console banner
 
 **Splash screen** — on first visit the app plays a short animated intro

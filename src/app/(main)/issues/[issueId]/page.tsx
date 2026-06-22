@@ -232,7 +232,7 @@ export default function IssueDetailPage({ params }: { params: Promise<{ issueId:
         {/* Body */}
         <div className='flex flex-1 overflow-hidden'>
           {/* Left: content */}
-          <div className='flex-1'>
+          <div className='flex-1 overflow-auto'>
             <div className='mx-auto max-w-[80ch] overflow-auto p-6 pt-10'>
               <h1 className='text-label-xl text-text-strong-950 mb-4 font-semibold'>
                 {issue.title}

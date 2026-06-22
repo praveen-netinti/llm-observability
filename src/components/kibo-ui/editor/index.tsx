@@ -435,16 +435,16 @@ const EditorSlashMenu = ({ items, editor, range }: EditorSlashMenuProps) => (
       )}
       {items.map((item) => (
         <Command.Item
-          className="flex cursor-pointer items-center gap-2 rounded-lg p-2 text-[13px] font-medium text-text-strong-950 data-[selected=true]:bg-bg-weak-50"
+          className="flex cursor-pointer items-center gap-2 rounded-lg p-2 text-[13px] font-medium text-text-strong-950 data-[selected=true]:bg-bg-weak-50 h-8"
           key={item.title}
           onSelect={() => {
             item.command({ editor, range });
           }}
         >
           <item.icon className="size-3.5 text-text-sub-600 shrink-0" />
-          <span>{item.title}</span>
+          <span className="mr-6 text-[13px]">{item.title}</span>
           {SLASH_ITEM_SHORTCUTS[item.title] && (
-            <code className="ml-auto text-[10px] text-text-soft-400 font-mono bg-bg-soft-200 rounded px-1 py-0.5">
+            <code className="ml-auto text-[10px] text-text-soft-400 font-mono rounded px-1">
               {SLASH_ITEM_SHORTCUTS[item.title]}
             </code>
           )}

@@ -408,6 +408,19 @@ type EditorSlashMenuProps = {
   range: Range;
 };
 
+const SLASH_ITEM_SHORTCUTS: Record<string, string> = {
+  "Text": "# →",
+  "To-do List": "[] Space",
+  "Heading 1": "# Space",
+  "Heading 2": "## Space",
+  "Heading 3": "### Space",
+  "Bullet List": "- Space",
+  "Numbered List": "1. Space",
+  "Quote": "> Space",
+  "Code": "``` Enter",
+  "Table": "/table",
+};
+
 const EditorSlashMenu = ({ items, editor, range }: EditorSlashMenuProps) => (
   <Command
     className="border border-stroke-soft-200 shadow-regular-md rounded-xl bg-bg-white-0 p-1"
@@ -422,14 +435,19 @@ const EditorSlashMenu = ({ items, editor, range }: EditorSlashMenuProps) => (
       )}
       {items.map((item) => (
         <Command.Item
-          className="flex cursor-pointer items-center gap-2 rounded-lg p-2 text-paragraph-sm text-text-strong-950 data-[selected=true]:bg-bg-weak-50"
+          className="flex cursor-pointer items-center gap-2 rounded-lg p-2 text-[13px] font-medium text-text-strong-950 data-[selected=true]:bg-bg-weak-50"
           key={item.title}
           onSelect={() => {
             item.command({ editor, range });
           }}
         >
-          <item.icon className="size-4 text-text-sub-600 shrink-0" />
+          <item.icon className="size-3.5 text-text-sub-600 shrink-0" />
           <span>{item.title}</span>
+          {SLASH_ITEM_SHORTCUTS[item.title] && (
+            <code className="ml-auto text-[10px] text-text-soft-400 font-mono bg-bg-soft-200 rounded px-1 py-0.5">
+              {SLASH_ITEM_SHORTCUTS[item.title]}
+            </code>
+          )}
         </Command.Item>
       ))}
     </Command.List>
@@ -640,7 +658,7 @@ export const EditorProvider = ({
         <TiptapEditorProvider
           editorProps={{
             handleKeyDown: (_view, event) => {
-              handleCommandNavigation(event);
+              return handleCommandNavigation(event) ?? false;
             },
           }}
           extensions={[

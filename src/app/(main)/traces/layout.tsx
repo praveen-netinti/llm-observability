@@ -27,6 +27,7 @@ import {
   getSortedRowModel,
   useReactTable,
   type ColumnDef,
+  type RowSelectionState,
   type SortingState,
 } from "@tanstack/react-table";
 import { usePathname, useRouter } from "next/navigation";
@@ -250,6 +251,47 @@ export default function TracesLayout() {
   const [sorting, setSorting] = React.useState<SortingState>([{ id: "startTime", desc: true }]);
   const [search, setSearch] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
+  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
+
+  // Shift-click range selection (anchor + last applied range), mirroring the issues table.
+  const anchorRowId = React.useRef<string | null>(null);
+  const lastRangeIds = React.useRef<Set<string>>(new Set());
+
+  const toggleRowSelection = React.useCallback(
+    (id: string, shiftKey: boolean, orderedIds: string[]) => {
+      setRowSelection((prev) => {
+        const next: RowSelectionState = { ...prev };
+
+        if (shiftKey && anchorRowId.current) {
+          const anchorIdx = orderedIds.indexOf(anchorRowId.current);
+          const currentIdx = orderedIds.indexOf(id);
+
+          if (anchorIdx >= 0 && currentIdx >= 0) {
+            for (const rid of lastRangeIds.current) {
+              if (rid !== anchorRowId.current) delete next[rid];
+            }
+
+            const start = Math.min(anchorIdx, currentIdx);
+            const end = Math.max(anchorIdx, currentIdx);
+            const newRange = new Set<string>();
+            for (let i = start; i <= end; i++) {
+              next[orderedIds[i]] = true;
+              newRange.add(orderedIds[i]);
+            }
+            lastRangeIds.current = newRange;
+            return next;
+          }
+        }
+
+        if (next[id]) delete next[id];
+        else next[id] = true;
+        anchorRowId.current = id;
+        lastRangeIds.current = new Set();
+        return next;
+      });
+    },
+    [],
+  );
 
   const showSlackAlert = (traceId: string) => {
     const card = slackCards.messages.find((m) => m.traceId === traceId && m.lifecycle === "alert");
@@ -397,10 +439,18 @@ export default function TracesLayout() {
     () => [
       {
         id: "select",
-        cell: ({ row }) => (
+        cell: ({ row, table }) => (
           <Checkbox.Root
             checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleRowSelection(
+                row.id,
+                e.shiftKey,
+                table.getRowModel().rows.map((r) => r.id),
+              );
+            }}
+            onCheckedChange={() => {}}
             aria-label='Select row'
             className={cn(
               "transition-all duration-200 ease-out",
@@ -545,16 +595,18 @@ export default function TracesLayout() {
         ),
       },
     ],
-    [router],
+    [router, toggleRowSelection],
   );
 
   const table = useReactTable({
     data: filteredRows,
     columns,
+    getRowId: (row) => row.id,
     onSortingChange: setSorting,
+    onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    state: { sorting },
+    state: { sorting, rowSelection },
   });
 
   return (

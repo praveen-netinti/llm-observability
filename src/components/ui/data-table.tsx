@@ -599,11 +599,6 @@ function DataTableBody<TData>({
                           "group/cell",
                           typeof cellClassName === "function" ? cellClassName(row) : cellClassName,
                         )}
-                        style={
-                          cell.column.columnDef.size
-                            ? { width: cell.column.columnDef.size, maxWidth: cell.column.columnDef.size }
-                            : undefined
-                        }
                       >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </Table.Cell>

@@ -4,9 +4,9 @@ import React, { useMemo } from "react";
 import { useIssuesLayout, type IssuesViewFilter } from "@/app/(main)/issues/layout";
 import { useIssues } from "@/contexts/issues-context";
 import { RiAddLine, RiArrowDownSFill, RiArrowRightSFill } from "@remixicon/react";
+import { useRouter } from "next/navigation";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import type { ColumnDef } from "@tanstack/react-table";
-import { useRouter } from "next/navigation";
 
 import {
   ASSIGNEE_OPTIONS,
@@ -93,16 +93,12 @@ export function IssuesTableView({ filter }: Props) {
 
   const columns: ColumnDef<Issue, unknown>[] = useMemo(
     () => [
-      {
-        ...dataTableSelectColumn<Issue>(),
-        size: 32,
-      },
+      dataTableSelectColumn<Issue>(),
       // Priority
       ...(vis.includes("priority")
         ? [
             {
               id: "priority",
-              size: 32,
               enableSorting: false,
               enableHiding: false,
               header: () => <></>,
@@ -147,7 +143,6 @@ export function IssuesTableView({ filter }: Props) {
         ? [
             {
               id: "issueId",
-              size: 56,
               enableSorting: false,
               header: () => <></>,
               cell: ({ row }: { row: { original: Issue } }) => (
@@ -161,7 +156,6 @@ export function IssuesTableView({ filter }: Props) {
         ? [
             {
               id: "status",
-              size: 32,
               enableSorting: false,
               header: () => <></>,
               cell: ({ row }: { row: { original: Issue } }) => (
@@ -205,7 +199,6 @@ export function IssuesTableView({ filter }: Props) {
         ? [
             {
               id: "traceId",
-              size: 56,
               enableSorting: false,
               header: () => <></>,
               cell: ({ row }: { row: { original: Issue } }) =>
@@ -232,7 +225,6 @@ export function IssuesTableView({ filter }: Props) {
         ? [
             {
               id: "assignee",
-              size: 32,
               enableSorting: false,
               header: () => <></>,
               cell: ({ row }: { row: { original: Issue } }) => (
@@ -293,7 +285,6 @@ export function IssuesTableView({ filter }: Props) {
         ? [
             {
               id: "created",
-              size: 64,
               enableSorting: false,
               header: () => <></>,
               cell: ({ row }: { row: { original: Issue } }) => (
@@ -309,7 +300,6 @@ export function IssuesTableView({ filter }: Props) {
         ? [
             {
               id: "labels",
-              size: 96,
               enableSorting: false,
               header: () => <></>,
               cell: ({ row }: { row: { original: Issue } }) =>
@@ -338,16 +328,20 @@ export function IssuesTableView({ filter }: Props) {
     columns,
     getRowId: (row) => row.id,
     keyboardScope: "page",
-    groupBy: display.grouping === "none" ? undefined : (row) => getGroupKey(row, display.grouping),
+    groupBy:
+      display.grouping === "none" ? undefined : (row) => getGroupKey(row, display.grouping),
     groupOrder,
     showEmptyGroups: display.showEmptyGroups,
     onRowActivate: (row) => router.push(`/issues/${row.id}`),
   });
 
   return (
-    <DataTable instance={dataTable}>
+    <DataTable
+      instance={dataTable}
+    >
+      <DataTable.Header />
       <DataTable.Body<Issue>
-        cellClassName='h-11 text-[13px] px-1'
+        cellClassName='text-[13px]'
         onRowClick={(row, e) => {
           if (e.shiftKey || e.metaKey || e.ctrlKey) {
             dataTable.toggleRowSelection(row.id, e.shiftKey);
@@ -362,7 +356,7 @@ export function IssuesTableView({ filter }: Props) {
           return (
             <div
               className={cn(
-                "bg-bg-weak-50 flex h-9 w-full mb-1 items-center gap-2 rounded-lg text-[13px] transition-colors",
+                "bg-bg-weak-50 flex h-9 w-full items-center gap-2 rounded-lg text-[13px] transition-colors",
                 index !== 0 && "mt-1",
               )}
             >

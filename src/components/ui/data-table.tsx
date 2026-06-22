@@ -380,9 +380,12 @@ function DataTableRoot<TData>({
     onRowActivate,
   } = instance;
 
-  // Keyboard navigation. In "container" scope it only fires when focus is
-  // inside the table; in "page" scope it fires anywhere except while typing
-  // in form fields / editable elements.
+  // Keyboard navigation via useHotkeys from @tanstack/react-hotkeys.
+  // In "container" scope it only fires when focus is inside the table;
+  // in "page" scope it fires anywhere except while typing.
+  const hotkeysEnabled = enableKeyboardNav;
+  const hotkeyTarget = keyboardScope === "container" ? containerRef : undefined;
+
   React.useEffect(() => {
     if (!enableKeyboardNav) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -392,7 +395,6 @@ function DataTableRoot<TData>({
       if (keyboardScope === "container") {
         if (!container.contains(document.activeElement as Node)) return;
       } else {
-        // page scope: ignore when the user is typing / interacting with a field
         const target = e.target as HTMLElement | null;
         if (
           target &&
@@ -404,15 +406,13 @@ function DataTableRoot<TData>({
         }
       }
 
-      const isNav = ["ArrowDown", "ArrowUp"].includes(e.key);
-      // cmdk-style: while keyboard-navigating, suppress pointer hover so only
-      // the active row is highlighted (cleared on the next real mousemove).
+      const isNav = ["ArrowDown", "ArrowUp", "j", "k"].includes(e.key);
       if (isNav) container.setAttribute("data-keyboard", "true");
 
-      if (e.key === "ArrowDown") {
+      if (e.key === "ArrowDown" || e.key === "j") {
         e.preventDefault();
         setFocusedIndex((p) => Math.min(p + 1, flatVisibleRows.length - 1));
-      } else if (e.key === "ArrowUp") {
+      } else if (e.key === "ArrowUp" || e.key === "k") {
         e.preventDefault();
         setFocusedIndex((p) => (p < 0 ? flatVisibleRows.length - 1 : Math.max(p - 1, 0)));
       } else if (e.key === "x" || e.key === "X") {

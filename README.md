@@ -61,60 +61,110 @@ then open **Traces** → click any row to see the waterfall.
 | **Alerts**       | `/alerts`      | Slack‑style incident cards (alert → investigating → triage → resolved)                                                                                                 |
 | **Settings**     | modal          | Open from the profile / help menu; **Appearance → toggle light / dark**; browse the settings pages                                                                     |
 
-**Global interactions**
+---
 
-- `⌘ / Ctrl + K` — Command Menu (jump between pages)
-- Switch dark mode from Profile Dropdown → Dark mode
-- Settings Modal accessible from Profile Dropdown / Help Dropdown
-- Collapse the sidebar to an icon rail (click the logo / rail)
-- First visit plays a splash screen; there's a console easter‑egg banner too
-- Responsive down to a mobile sidebar
+## Keyboard shortcuts
+
+The app is fully keyboard‑accessible, modeled on [Linear](https://linear.app)'s
+shortcut design. All shortcuts are powered by
+[TanStack Hotkeys](https://tanstack.com/hotkeys) (`@tanstack/react-hotkeys`) and
+registered from a single source of truth (`src/config/shortcuts.ts`).
+
+Press **⌘/** (or **Ctrl+/**) to open the **Keyboard Shortcuts drawer** at any time.
+
+### General
+
+| Action                 | Shortcut     |
+| ---------------------- | ------------ |
+| Open command menu      | `⌘ K`        |
+| Open search            | `/`          |
+| View keyboard shortcuts| `⌘ /`        |
+| Open settings          | `G then S`   |
+| Toggle dark mode       | `⌘ ⇧ L`     |
+
+### Navigation
+
+| Action              | Shortcut     |
+| ------------------- | ------------ |
+| Go to Dashboard     | `G then D`   |
+| Go to Traces        | `G then T`   |
+| Go to Issues        | `G then I`   |
+| Go to Alerts        | `G then A`   |
+| Toggle left sidebar | `[`          |
+
+### List & Board
+
+| Action              | Shortcut     |
+| ------------------- | ------------ |
+| Move down           | `J` or `↓`  |
+| Move up             | `K` or `↑`  |
+| Select item         | `X`          |
+| Select all          | `⌘ A`       |
+| Clear selection     | `Escape`     |
+| Open focused item   | `Enter`      |
+| Toggle list/board   | `⌘ B`       |
+
+### Trace Detail
+
+| Action              | Shortcut     |
+| ------------------- | ------------ |
+| Close panel         | `Escape`     |
+| Previous trace      | `K`          |
+| Next trace          | `J`          |
+| Copy trace ID       | `⌘ .`       |
+
+### Issue Detail
+
+| Action              | Shortcut     |
+| ------------------- | ------------ |
+| Previous issue      | `K`          |
+| Next issue          | `J`          |
+| Copy issue ID       | `⌘ .`       |
+| Copy issue URL      | `⌘ ⇧ /`     |
+
+---
+
+## Global interactions
+
+- **Command Menu** (`⌘/Ctrl + K` or `/`) — fuzzy jump between all pages
+- **Dark mode** — toggle from Profile Dropdown or `⌘⇧L`
+- **Settings Modal** — Profile Dropdown → Settings, or `G then S`
+- **Collapsible sidebar** — click the logo/rail or press `[`
+- **Splash screen** — animated intro on first visit (Framer Motion)
+- **Console easter‑egg** — open DevTools to see a styled ASCII banner
+- **Responsive** — mobile sidebar with hamburger toggle
+- **Tooltips with shortcut hints** — hover buttons in trace/issue detail to see bound keys
 
 ### Issues (`/issues`)
 
 - **3 views** — All issues, Active issues, Backlog issues
-- Click **Display options** to switch between list and board view
-- Grouping by column (status, priority, assignee)
-- Display properties (customise column visibility)
-
-**List View**
-
-- Hover a row to reveal the checkbox
-- `Shift` + click a checkbox to select all rows in between
-- Click priority, status, or assignee in a row cell → working dropdown to change the value
-- Click any row to navigate to the detail page
-
-**Board View (Kanban)**
-
-- Full drag‑and‑drop between columns
-- Click any card to navigate to the detail page
-
-**Issue Detail Page**
-
-- Header right side: previous/next navigation with position indicator (e.g. "1/3")
-- Left side: issue description (Slack markdown) with metadata
-- Right side: Properties, Labels, Details accordions
-- Copy issue URL and copy issue ID buttons (top‑right, above accordions)
+- **Display options** — switch list ↔ board (`⌘B`), grouping, column visibility
+- **List view** — hover reveals checkbox; `Shift+click` range select; `J/K` or arrow keys to navigate; `X` to toggle; inline priority/status/assignee dropdowns
+- **Board view (Kanban)** — full drag‑and‑drop between columns
+- **Issue detail** — prev/next nav (`J/K`), copy ID (`⌘.`), copy URL (`⌘⇧/`), Properties/Labels/Details accordions
 
 ### Traces (`/traces`)
 
-- Search by name and status filter
-- Hover a row to reveal the checkbox
-- `Shift` + click a checkbox to select all rows in between
-- Column sorting works
-- Click the **Open** button on an error trace row to trigger a Slack notification
-- Hover the name column → "OPEN" button appears to open the detail panel
+- Search by name + multi‑field filter (status, environment, tags)
+- `J/K` or arrow keys to navigate rows; `X` to select; `⌘A` select all
+- Column sorting; grouping by status or environment
+- Click **Open** on an error trace → Slack notification card
+- **Detail panel** — close (`Escape`), prev/next (`K/J`), copy trace ID (`⌘.`); toggle Tree ↔ Waterfall view
 
-**Detail Panel**
+### Alerts (`/alerts`)
 
-- Close button to dismiss the panel
-- Previous/Next trace navigation
-- Click the trace ID → popover with a working copy button
-- Toggle between Tree and Waterfall views
+- Slack‑style incident cards with lifecycle: alert → investigating → triage → resolved
 
-> **Placeholder nav:** Playground, Models, Prompts, Evaluations, Cost & Usage,
-> API Keys, and Guardrails appear in the sidebar to convey the product shape but
-> aren't implemented yet.
+---
+
+## Splash screen & console banner
+
+**Splash screen** — on first visit the app plays a short animated intro
+(logo + product name) before revealing the dashboard. Built with Framer Motion;
+can be re‑enabled in `src/app/layout.tsx` by uncommenting `<SplashScreen>`.
+
+**Console banner** — open your browser's DevTools console to see a styled ASCII
+art banner with project info. Implemented in `src/components/console-banner.tsx`.
 
 ---
 
@@ -153,13 +203,17 @@ the issues list/board) before building.
 
 ## Stack & build
 
-| Layer        | Choice                                                                                             |
-| ------------ | -------------------------------------------------------------------------------------------------- |
-| Framework    | Next.js 16 (App Router) · React 19 · TypeScript                                                    |
-| Styling      | Tailwind v4 with semantic CSS‑variable tokens (`bg-weak-50`, `text-strong-950`, `stroke-soft-200`) |
-| Theming      | Light **and** dark via `next-themes`                                                               |
-| Primitives   | **Radix UI** (dialog, popover, dropdown, tabs, select, tooltip, scroll‑area…)                      |
-| Charts       | Recharts with custom tooltips; the trace waterfall is hand‑built                                   |
-| Interactions | `@dnd-kit` (kanban), `cmdk` (command palette), `motion` (splash/transitions)                       |
+| Layer        | Choice                                                                                                          |
+| ------------ | --------------------------------------------------------------------------------------------------------------- |
+| Framework    | Next.js 16 (App Router) · React 19 · TypeScript                                                                 |
+| Styling      | Tailwind v4 with semantic CSS‑variable tokens (`bg-weak-50`, `text-strong-950`, `stroke-soft-200`)              |
+| Theming      | Light **and** dark via `next-themes`                                                                            |
+| Primitives   | **Radix UI** (dialog, popover, dropdown, tabs, select, tooltip, scroll‑area…)                                   |
+| Charts       | Recharts with custom tooltips; the trace waterfall is hand‑built                                                |
+| Interactions | `@dnd-kit` (kanban), `cmdk` (command palette), `motion` (splash/transitions), `@tanstack/react-hotkeys` (keys) |
 
 ---
+
+> **Placeholder nav:** Playground, Models, Prompts, Evaluations, Cost & Usage,
+> API Keys, and Guardrails appear in the sidebar to convey the product shape but
+> aren't implemented yet.

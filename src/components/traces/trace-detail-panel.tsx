@@ -24,6 +24,7 @@ import {
 } from "@remixicon/react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
+import { useHotkey } from "@tanstack/react-hotkeys";
 
 import { FlatSpan, flatSpans } from "@/lib/flatten-traces";
 import { cn } from "@/utils";
@@ -100,6 +101,14 @@ function Header() {
     if (hasNext) router.push(`/traces/${traceRoots[traceIndex + 1].traceId}`);
   };
 
+  // Keyboard shortcuts for the detail panel
+  useHotkey("Escape", () => close(), { requireReset: true });
+  useHotkey("K", () => goToPrev());
+  useHotkey("J", () => goToNext());
+  useHotkey("Mod+.", () => {
+    navigator.clipboard.writeText(traceId);
+  });
+
   return (
     <div className='border-faded-lighter dark:border-stroke-soft-200 flex h-11 shrink-0 items-center gap-0.5 border-b px-2'>
       <Tooltip.Root>
@@ -114,7 +123,7 @@ function Header() {
             <Button.Icon as={RiArrowRightDoubleLine} className='text-text-soft-400' />
           </Button.Root>
         </Tooltip.Trigger>
-        <Tooltip.Content>Close</Tooltip.Content>
+        <Tooltip.Content>Close (Esc)</Tooltip.Content>
       </Tooltip.Root>
 
       <Tooltip.Root>
@@ -152,7 +161,7 @@ function Header() {
             <Button.Icon as={RiArrowUpSLine} className='text-text-soft-400' />
           </Button.Root>
         </Tooltip.Trigger>
-        <Tooltip.Content>Previous</Tooltip.Content>
+        <Tooltip.Content>Previous (K)</Tooltip.Content>
       </Tooltip.Root>
 
       <Tooltip.Root>
@@ -168,7 +177,7 @@ function Header() {
             <Button.Icon as={RiArrowDownSLine} className='text-text-soft-400' />
           </Button.Root>
         </Tooltip.Trigger>
-        <Tooltip.Content>Next</Tooltip.Content>
+        <Tooltip.Content>Next (J)</Tooltip.Content>
       </Tooltip.Root>
 
       <div className='bg-bg-soft-200 h-3.5 w-px' style={{ marginInline: "8px" }} />

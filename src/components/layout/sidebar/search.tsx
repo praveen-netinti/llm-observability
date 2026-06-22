@@ -1,8 +1,11 @@
+"use client";
+
 import { RiSearchLine } from "@remixicon/react";
 
 import { cn } from "@/utils";
 
 import * as Kbd from "@/components/ui/kbd";
+import { useCommandMenu } from "@/components/command-menu";
 
 function IconCmd(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -23,12 +26,12 @@ function IconCmd(props: React.SVGProps<SVGSVGElement>) {
 }
 
 export function CommandMenuSearch() {
+  const { open } = useCommandMenu();
+
   return (
     <div className='relative shrink-0 px-3.5 py-5 lg:px-3.5 lg:pt-4 lg:pb-3.5'>
       <button
-        onClick={() => {
-          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
-        }}
+        onClick={open}
         className={cn(
           "group text-text-soft-400 bg-bg-soft-200 flex h-8 w-full items-center justify-between rounded-lg p-1.5 pr-2 text-[13px] font-medium transition-colors duration-200",
         )}

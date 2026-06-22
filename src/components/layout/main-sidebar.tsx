@@ -10,6 +10,7 @@ import { cn } from "@/utils/cn";
 import * as Button from "@/components/ui/button";
 import * as Tooltip from "@/components/ui/tooltip";
 
+import { useCommandMenu } from "@/components/command-menu";
 import { HelpDropdown } from "./sidebar/help-dropdown";
 import { NavItemLink } from "./sidebar/nav-item-link";
 import { ProfileDropdown } from "./sidebar/profile-dropdown";
@@ -18,10 +19,12 @@ import { sidebarData, type NavSection } from "./sidebar/sidebar-data";
 
 export interface MainSidebarRef {
   toggleMobileSidebar: () => void;
+  toggleSidebar: () => void;
 }
 
 const MainSidebar = forwardRef<MainSidebarRef>((_props, ref) => {
   const pathname = usePathname();
+  const { open: openCommandMenu } = useCommandMenu();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -29,7 +32,7 @@ const MainSidebar = forwardRef<MainSidebarRef>((_props, ref) => {
   const toggleSidebar = () => setIsSidebarCollapsed((v) => !v);
   const toggleMobileSidebar = () => setIsMobileSidebarOpen((v) => !v);
 
-  useImperativeHandle(ref, () => ({ toggleMobileSidebar }));
+  useImperativeHandle(ref, () => ({ toggleMobileSidebar, toggleSidebar }));
 
   useEffect(() => {
     setIsMobileSidebarOpen(false);
@@ -101,7 +104,7 @@ const MainSidebar = forwardRef<MainSidebarRef>((_props, ref) => {
                     className='group/search hover:bg-bg-soft-200 cursor-pointer'
                     onClick={(e) => {
                       e.stopPropagation();
-                      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true }));
+                      openCommandMenu();
                     }}
                   >
                     <Button.Icon

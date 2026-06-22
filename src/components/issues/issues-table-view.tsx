@@ -5,6 +5,7 @@ import { useIssuesLayout, type IssuesViewFilter } from "@/app/(main)/issues/layo
 import { useIssues } from "@/contexts/issues-context";
 import { RiAddLine, RiArrowDownSFill, RiArrowRightSFill } from "@remixicon/react";
 import { useRouter } from "next/navigation";
+import { useHotkey } from "@tanstack/react-hotkeys";
 
 import {
   ASSIGNEE_OPTIONS,
@@ -73,11 +74,16 @@ type Props = {
 
 export function IssuesTableView({ filter }: Props) {
   const { issues, updateIssue } = useIssues();
-  const { display } = useIssuesLayout();
+  const { display, setDisplay } = useIssuesLayout();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+
+  // Mod+B to toggle between list and board view
+  useHotkey("Mod+B", () => {
+    setDisplay((prev) => ({ ...prev, view: prev.view === "list" ? "board" : "list" }));
+  });
 
   const filteredIssues = useMemo(() => {
     if (filter === "active")
@@ -183,10 +189,10 @@ export function IssuesTableView({ filter }: Props) {
       const container = containerRef.current;
       if (!container || !container.contains(document.activeElement as Node)) return;
 
-      if (e.key === "ArrowDown") {
+      if (e.key === "ArrowDown" || e.key === "j") {
         e.preventDefault();
         setFocusedIndex((prev) => Math.min(prev + 1, flatRows.length - 1));
-      } else if (e.key === "ArrowUp") {
+      } else if (e.key === "ArrowUp" || e.key === "k") {
         e.preventDefault();
         setFocusedIndex((prev) => Math.max(prev - 1, 0));
       } else if (e.key === "x" || e.key === "X") {

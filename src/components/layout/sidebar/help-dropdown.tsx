@@ -13,10 +13,13 @@ import {
 
 import * as Button from "@/components/ui/button";
 import * as Dropdown from "@/components/ui/dropdown";
+import { ShortcutKbd } from "@/components/ui/shortcut-kbd";
 import { useSettings } from "@/contexts/settings-context";
+import { useShortcuts } from "@/contexts/shortcuts-context";
 
 export function HelpDropdown() {
   const { openSettings } = useSettings();
+  const { openShortcuts } = useShortcuts();
 
   return (
     <div className='relative shrink-0 p-5 lg:px-3.5 lg:pt-4 lg:pb-3.5'>
@@ -44,15 +47,15 @@ export function HelpDropdown() {
             <Dropdown.ItemIcon as={RiMessage2Line} />
             Contact us
           </Dropdown.Item>
-          <Dropdown.Item>
+          <Dropdown.Item onSelect={() => openShortcuts()}>
             <Dropdown.ItemIcon as={RiKeyboardBoxLine} />
             Keyboard shortcuts
-            <span className='text-2xs text-text-sub-600 ml-auto'>⌘ /</span>
+            <ShortcutKbd keys="Mod+/" />
           </Dropdown.Item>
           <Dropdown.Item onSelect={() => openSettings()}>
             <Dropdown.ItemIcon as={RiSettings2Line} />
             Settings
-            <span className='text-2xs text-text-sub-600 ml-auto'>G then S</span>
+            <ShortcutKbd keys={["G", "S"]} />
           </Dropdown.Item>
           <Dropdown.Item>
             <Dropdown.ItemIcon as={RiSlackFill} />
@@ -72,8 +75,8 @@ export function HelpDropdown() {
                 height='100%'
                 fill='none'
                 stroke='currentColor'
-                stroke-width='2'
-                stroke-dasharray='8, 4'
+                strokeWidth='2'
+                strokeDasharray='8, 4'
                 rx='8'
                 className='stroke-bg-soft-200'
               />

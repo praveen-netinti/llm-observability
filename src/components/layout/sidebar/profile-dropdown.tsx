@@ -18,6 +18,7 @@ import { notification } from "@/hooks/use-notification";
 import * as Button from "@/components/ui/button";
 import * as Divider from "@/components/ui/divider";
 import * as Dropdown from "@/components/ui/dropdown";
+import { ShortcutKbd } from "@/components/ui/shortcut-kbd";
 import * as Switch from "@/components/ui/switch";
 
 export function ProfileDropdown() {
@@ -59,7 +60,7 @@ export function ProfileDropdown() {
         <Dropdown.Item onSelect={() => openSettings()}>
           <Dropdown.ItemIcon as={RiSettings2Line} />
           Settings
-          <span className='text-2xs text-text-sub-600 ml-auto'>G then S</span>
+          <ShortcutKbd keys={["G", "S"]} />
         </Dropdown.Item>
 
         <Divider.Root variant='line-spacing' className='py-1.5' />
@@ -103,7 +104,7 @@ export function ProfileDropdown() {
           >
             <Dropdown.ItemIcon as={RiLogoutBoxRLine} />
             Logout
-            <span className='text-2xs text-text-sub-600 ml-auto'>⌥ ⇧ Q</span>
+            <ShortcutKbd keys="Alt+Shift+Q" />
           </Dropdown.Item>
         </Dropdown.Group>
       </Dropdown.Content>

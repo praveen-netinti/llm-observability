@@ -28,6 +28,7 @@
     "@radix-ui/react-toast": "^1.2.17",
     "@radix-ui/react-tooltip": "^1.2.10",
     "@remixicon/react": "^4.9.0",
+    "@tailwindcss/typography": "^0.5.20",
     "@tanstack/react-hotkeys": "0.10.0",
     "@tanstack/react-table": "^8.21.3",
     "@tiptap/core": "^3.27.1",

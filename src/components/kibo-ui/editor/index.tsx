@@ -422,19 +422,14 @@ const EditorSlashMenu = ({ items, editor, range }: EditorSlashMenuProps) => (
       )}
       {items.map((item) => (
         <Command.Item
-          className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-2 pr-3 text-sm data-[selected=true]:bg-bg-weak-50"
+          className="flex cursor-pointer items-center gap-2 rounded-lg p-2 text-paragraph-sm text-text-strong-950 data-[selected=true]:bg-bg-weak-50"
           key={item.title}
-          onSelect={() => item.command({ editor, range })}
+          onSelect={() => {
+            item.command({ editor, range });
+          }}
         >
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-stroke-soft-200 bg-bg-weak-50">
-            <item.icon className="text-text-sub-600" size={16} />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-label-sm text-text-strong-950">{item.title}</span>
-            <span className="text-paragraph-xs text-text-soft-400">
-              {item.description}
-            </span>
-          </div>
+          <item.icon className="size-4 text-text-sub-600 shrink-0" />
+          <span>{item.title}</span>
         </Command.Item>
       ))}
     </Command.List>
@@ -447,6 +442,7 @@ const handleCommandNavigation = (event: KeyboardEvent) => {
 
     if (slashCommand) {
       event.preventDefault();
+      event.stopPropagation();
       slashCommand.dispatchEvent(
         new KeyboardEvent("keydown", {
           key: event.key,

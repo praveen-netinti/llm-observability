@@ -36,7 +36,7 @@ import * as Accordion from "@/components/ui/accordion";
 import * as Breadcrumb from "@/components/ui/breadcrumb";
 import * as Button from "@/components/ui/button";
 import * as ButtonGroup from "@/components/ui/button-group";
-import { Markdown } from "@/components/ui/markdown";
+import IssueDescriptionEditor from "@/components/issues/issue-description-editor";
 import * as Select from "@/components/ui/select";
 import * as Tooltip from "@/components/ui/tooltip";
 
@@ -259,7 +259,12 @@ export default function IssueDetailPage({ params }: { params: Promise<{ issueId:
 
               <div className='text-paragraph-sm text-text-strong-950 leading-relaxed'>
                 {issue.description ? (
-                  <Markdown>{issue.description}</Markdown>
+                  <IssueDescriptionEditor
+                    key={issue.id}
+                    issueId={issue.id}
+                    description={issue.description}
+                    onUpdate={updateIssue}
+                  />
                 ) : (
                   <span className='text-text-soft-400'>No description.</span>
                 )}

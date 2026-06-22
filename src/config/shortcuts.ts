@@ -13,7 +13,8 @@ export type ShortcutGroup =
   | "Navigation"
   | "List & Board"
   | "Trace Detail"
-  | "Issue Detail";
+  | "Issue Detail"
+  | "Editor";
 
 export const SHORTCUTS: ShortcutDef[] = [
   // ─── General ───────────────────────────────────────────────
@@ -59,6 +60,42 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
   "List & Board",
   "Trace Detail",
   "Issue Detail",
+  "Editor",
+];
+
+/** Slash commands available in the editor via `/` trigger */
+export type SlashCommand = { id: string; label: string; description: string };
+
+export const SLASH_COMMANDS: SlashCommand[] = [
+  { id: "text", label: "Text", description: "Plain text paragraph" },
+  { id: "todo", label: "To-do List", description: "Track tasks with checkboxes" },
+  { id: "h1", label: "Heading 1", description: "Big section heading" },
+  { id: "h2", label: "Heading 2", description: "Medium section heading" },
+  { id: "h3", label: "Heading 3", description: "Small section heading" },
+  { id: "bullet", label: "Bullet List", description: "Simple bullet list" },
+  { id: "numbered", label: "Numbered List", description: "List with numbering" },
+  { id: "quote", label: "Quote", description: "Capture a quote" },
+  { id: "code", label: "Code", description: "Code snippet block" },
+  { id: "table", label: "Table", description: "Organize data in columns" },
+];
+
+/** Markdown formatting shortcuts (type these in the editor) */
+export type MarkdownShortcut = { syntax: string; label: string };
+
+export const MARKDOWN_SHORTCUTS: MarkdownShortcut[] = [
+  { syntax: "# Space", label: "Heading 1" },
+  { syntax: "## Space", label: "Heading 2" },
+  { syntax: "### Space", label: "Heading 3" },
+  { syntax: "- Space", label: "Bulleted list" },
+  { syntax: "1. Space", label: "Numbered list" },
+  { syntax: "[] Space", label: "Checklist" },
+  { syntax: "> Space", label: "Blockquote" },
+  { syntax: "``` Enter", label: "Code block" },
+  { syntax: "**Text**", label: "Bold" },
+  { syntax: "_Text_", label: "Italic" },
+  { syntax: "~Text~", label: "Strikethrough" },
+  { syntax: "`Code`", label: "Inline code" },
+  { syntax: "*** Space", label: "Horizontal divider" },
 ];
 
 /** Look up a shortcut definition by id */

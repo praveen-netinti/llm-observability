@@ -8,7 +8,7 @@ import { SettingsProvider } from "@/contexts/settings-context";
 import { ShortcutsProvider } from "@/contexts/shortcuts-context";
 
 import MainSidebar, { MainSidebarRef } from "@/components/layout/main-sidebar";
-import { AppCommandMenu } from "@/components/command-menu";
+import { CommandMenuProvider } from "@/components/command-menu";
 import { GlobalHotkeys } from "@/components/global-hotkeys";
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
@@ -28,12 +28,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <IssuesProvider>
           <SettingsProvider>
             <ShortcutsProvider>
-              <div className='bg-bg-weak-50 relative flex h-dvh overflow-hidden lg:h-screen'>
-                <MainSidebar ref={sidebarRef} />
-                <main className='w-full flex-1 overflow-hidden'>{children}</main>
-                <AppCommandMenu />
-                <GlobalHotkeys />
-              </div>
+              <CommandMenuProvider>
+                <div className='bg-bg-weak-50 relative flex h-dvh overflow-hidden lg:h-screen'>
+                  <MainSidebar ref={sidebarRef} />
+                  <main className='w-full flex-1 overflow-hidden'>{children}</main>
+                  <GlobalHotkeys />
+                </div>
+              </CommandMenuProvider>
             </ShortcutsProvider>
           </SettingsProvider>
         </IssuesProvider>

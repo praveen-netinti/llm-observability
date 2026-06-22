@@ -22,6 +22,15 @@
 > alerts, and analytics — built to feel like [Linear](https://linear.app).
 > Static mock data, **zero backend, zero setup**.
 
+## Table of contents
+
+- [Quick start](#quick-start)
+- [Testing guide](#testing-guide)
+- [Keyboard shortcuts](#keyboard-shortcuts)
+- [Editor (slash commands & markdown)](#editor-slash-commands--markdown)
+- [Design thinking](#design-thinking)
+- [Stack](#stack)
+
 ---
 
 ## Quick start

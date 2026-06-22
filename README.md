@@ -63,10 +63,54 @@ then open **Traces** → click any row to see the waterfall.
 
 **Global interactions**
 
-- `⌘ / Ctrl + K` — command palette to jump between pages
+- `⌘ / Ctrl + K` — Command Menu (jump between pages)
+- Switch dark mode from Profile Dropdown → Dark mode
+- Settings Modal accessible from Profile Dropdown / Help Dropdown
 - Collapse the sidebar to an icon rail (click the logo / rail)
 - First visit plays a splash screen; there's a console easter‑egg banner too
 - Responsive down to a mobile sidebar
+
+### Issues (`/issues`)
+
+- **3 views** — All issues, Active issues, Backlog issues
+- Click **Display options** to switch between list and board view
+- Grouping by column (status, priority, assignee)
+- Display properties (customise column visibility)
+
+**List View**
+
+- Hover a row to reveal the checkbox
+- `Shift` + click a checkbox to select all rows in between
+- Click priority, status, or assignee in a row cell → working dropdown to change the value
+- Click any row to navigate to the detail page
+
+**Board View (Kanban)**
+
+- Full drag‑and‑drop between columns
+- Click any card to navigate to the detail page
+
+**Issue Detail Page**
+
+- Header right side: previous/next navigation with position indicator (e.g. "1/3")
+- Left side: issue description (Slack markdown) with metadata
+- Right side: Properties, Labels, Details accordions
+- Copy issue URL and copy issue ID buttons (top‑right, above accordions)
+
+### Traces (`/traces`)
+
+- Search by name and status filter
+- Hover a row to reveal the checkbox
+- `Shift` + click a checkbox to select all rows in between
+- Column sorting works
+- Click the **Open** button on an error trace row to trigger a Slack notification
+- Hover the name column → "OPEN" button appears to open the detail panel
+
+**Detail Panel**
+
+- Close button to dismiss the panel
+- Previous/Next trace navigation
+- Click the trace ID → popover with a working copy button
+- Toggle between Tree and Waterfall views
 
 > **Placeholder nav:** Playground, Models, Prompts, Evaluations, Cost & Usage,
 > API Keys, and Guardrails appear in the sidebar to convey the product shape but

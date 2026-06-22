@@ -1,7 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { RiArrowDownSFill, RiArrowUpSFill, RiThumbDownLine, RiThumbUpLine } from "@remixicon/react";
+import { useSidebar } from "@/contexts/sidebar-context";
+import {
+  RiArrowDownSFill,
+  RiArrowRightSLine,
+  RiArrowUpSFill,
+  RiLayoutLeft2Line,
+  RiThumbDownLine,
+  RiThumbUpLine,
+} from "@remixicon/react";
 import { format } from "date-fns";
 import {
   Area,
@@ -32,9 +40,12 @@ import {
 import { cn } from "@/utils/cn";
 
 import * as Badge from "@/components/ui/badge";
+import * as Breadcrumb from "@/components/ui/breadcrumb";
 import * as Button from "@/components/ui/button";
 import * as ButtonGroup from "@/components/ui/button-group";
 import * as Divider from "@/components/ui/divider";
+
+import { IconUserBox } from "./traces/layout";
 
 const histogram = getLatencyHistogram();
 const costByModel = getCostByModel();
@@ -429,7 +440,6 @@ function WidgetLatencyDistribution() {
         badgeColor='gray'
         description='median (p50)'
       >
-
         <Button.Root size='xsmall' variant='neutral' mode='stroke'>
           Details
         </Button.Root>
@@ -950,10 +960,31 @@ function formatMs(ms: number): string {
 }
 
 export default function MainPage() {
+  const { onMenuClick } = useSidebar();
+
   return (
     <div className='flex h-full flex-col lg:p-2 lg:pl-0'>
       <div className='bg-bg-white-0 lg:border-stroke-soft-200 relative flex h-full flex-col overflow-y-auto lg:rounded-2xl lg:border'>
-        <div className='flex items-center justify-between px-4 py-5 lg:px-8'>
+        {/* Header */}
+        <div className='flex h-11 min-h-11 items-center px-2'>
+          <Button.Root
+            variant='neutral'
+            mode='ghost'
+            size='xxsmall'
+            onClick={onMenuClick}
+            className='size-7 cursor-pointer rounded-lg p-0 lg:hidden'
+          >
+            <Button.Icon as={RiLayoutLeft2Line} className='text-text-soft-400' />
+          </Button.Root>
+          <Breadcrumb.Root className='ml-2.5 gap-0.5'>
+            <Breadcrumb.Item className='text-[13px]!'>
+              <Breadcrumb.Icon as={IconUserBox} className='size-4' />
+              Praveen-netinti
+            </Breadcrumb.Item>
+          </Breadcrumb.Root>
+        </div>
+
+        <div className='flex items-center justify-between px-4 py-5 lg:px-5'>
           <div>
             <div className='text-label-lg text-text-strong-950'>Good morning, Praveen</div>
             <div className='text-label-sm text-text-sub-600 mt-1'>
@@ -962,11 +993,11 @@ export default function MainPage() {
           </div>
         </div>
 
-        <div className='px-4 pt-4 lg:px-8'>
+        <div className='px-4 pt-4 lg:px-5'>
           <StatTiles />
         </div>
 
-        <div className='px-4 py-6 lg:px-8'>
+        <div className='px-4 py-6 lg:px-5'>
           <div className='flex flex-col gap-4 lg:flex-row lg:items-start'>
             <div className='flex flex-1 flex-col gap-4'>
               <WidgetLatencyDistribution />

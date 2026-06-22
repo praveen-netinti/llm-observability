@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { RiEqualizerLine } from "@remixicon/react";
+import { RiEqualizer2Line, RiEqualizerLine } from "@remixicon/react";
 import type { Table } from "@tanstack/react-table";
 
 import { cn } from "@/utils";
@@ -42,9 +42,9 @@ export function TracesDisplayOptions<TData>({
           variant='neutral'
           mode='stroke'
           size='xxsmall'
-          className='border-stroke-soft-200 hover:bg-bg-soft-200 size-7 rounded-full border bg-transparent shadow-none ring-0'
+          className='border-stroke-soft-200 hover:bg-bg-soft-200 size-7 rounded-full border bg-transparent p-0 shadow-none ring-0'
         >
-          <Button.Icon as={RiEqualizerLine} className='size-3.5' />
+          <Button.Icon as={RiEqualizer2Line} className='size-4' />
           <span className='sr-only'>Display options</span>
         </Button.Root>
       </Dropdown.Trigger>

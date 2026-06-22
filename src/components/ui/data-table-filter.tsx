@@ -53,19 +53,19 @@ export function DataTableFilter({ fields, value, onChange, trigger }: Props) {
   };
 
   return (
-    <Dropdown.Root>
+    <Dropdown.Root open>
       <Dropdown.Trigger asChild>
         {trigger ?? (
           <Button.Root
             variant='neutral'
             mode='stroke'
             size='xxsmall'
-            className='border-stroke-soft-200 hover:bg-bg-soft-200 size-7 gap-1.5 rounded-full border bg-transparent shadow-none ring-0 data-[count]:w-auto data-[count]:px-2'
+            className='border-stroke-soft-200 hover:bg-bg-soft-200 size-7 gap-1.5 rounded-full border bg-transparent p-0 shadow-none ring-0 data-count:w-auto data-count:px-2'
             {...(activeCount > 0 ? { "data-count": activeCount } : {})}
           >
             <Button.Icon as={RiFilter3Line} className='size-3.5' />
             {activeCount > 0 && (
-              <span className='text-text-strong-950 text-[11px] font-medium tabular-nums'>
+              <span className='text-text-strong-950 text-2xs font-medium tabular-nums'>
                 {activeCount}
               </span>
             )}
@@ -78,18 +78,18 @@ export function DataTableFilter({ fields, value, onChange, trigger }: Props) {
           const selected = value[field.id] ?? [];
           return (
             <Dropdown.MenuSub key={field.id}>
-              <Dropdown.MenuSubTrigger>
+              <Dropdown.MenuSubTrigger className='text-[13px]'>
                 {field.icon && <Dropdown.ItemIcon as={field.icon} />}
                 {field.label}
                 {selected.length > 0 && (
-                  <span className='bg-bg-weak-50 text-text-sub-600 ml-1 rounded-full px-1.5 text-[10px] font-medium tabular-nums'>
+                  <span className='bg-bg-weak-50 text-text-sub-600 ml-1 rounded-full px-1.5 text-2xs font-medium tabular-nums'>
                     {selected.length}
                   </span>
                 )}
               </Dropdown.MenuSubTrigger>
-              <Dropdown.MenuSubContent className='w-48'>
+              <Dropdown.MenuSubContent className='w-52 gap-0 px-0 py-2'>
                 {field.options.length === 0 ? (
-                  <div className='text-text-soft-400 px-2 py-1.5 text-[13px]'>No values</div>
+                  <div className='text-text-soft-400 mx-2 px-2 py-1.5 text-[13px]'>No values</div>
                 ) : (
                   field.options.map((opt) => {
                     const isChecked = selected.includes(opt.value);
@@ -111,10 +111,8 @@ export function DataTableFilter({ fields, value, onChange, trigger }: Props) {
                         ) : (
                           <span
                             className={cn(
-                              "grid size-4 place-items-center rounded-full border",
-                              isChecked
-                                ? "border-primary-base"
-                                : "border-stroke-soft-200",
+                              "grid size-5 shrink-0 place-items-center rounded-full border",
+                              isChecked ? "border-primary-base" : "border-stroke-soft-200",
                             )}
                           >
                             {isChecked && <span className='bg-primary-base size-2 rounded-full' />}

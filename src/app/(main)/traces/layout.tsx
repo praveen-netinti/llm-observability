@@ -62,6 +62,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 //   SegmentedControlTab,
 // } from "@/components/ui/segmented-control";
 import * as StatusBadge from "@/components/ui/status-badge";
+import { STATUS_CONFIG } from "@/components/issues/issue-config";
 
 export function IconUserBox(props: SVGProps<SVGSVGElement>) {
   return (
@@ -241,7 +242,7 @@ const TRACE_FILTER_FIELDS: FilterField[] = [
   {
     id: "status",
     label: "Status",
-    icon: RiLoader4Line,
+    icon: STATUS_CONFIG.backlog.icon,
     type: "multi",
     options: [
       { value: "success", label: "Success" },
@@ -752,7 +753,7 @@ export default function TracesLayout() {
                 renderGroupHeader={({ groupKey, count, collapsed, toggle, index }) => (
                   <div
                     className={cn(
-                      "bg-bg-weak-50 flex h-9 w-full items-center gap-2 rounded-lg px-2 text-[13px]",
+                      "bg-bg-weak-50 flex h-9 w-full items-center gap-2 rounded-lg px-2 text-[13px] mb-1",
                       index !== 0 && "mt-1",
                     )}
                   >

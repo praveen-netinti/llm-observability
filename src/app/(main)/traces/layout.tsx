@@ -43,7 +43,7 @@ import {
   type SlackBlock,
 } from "@/components/slack/slack-card";
 import { SlackLogo } from "@/components/slack/slack-logo";
-import { TimeRangeFilter } from "@/components/traces/time-range-filter";
+// import { TimeRangeFilter } from "@/components/traces/time-range-filter";
 import { TraceDetailPanel } from "@/components/traces/trace-detail-panel";
 import * as Badge from "@/components/ui/badge";
 import * as Breadcrumb from "@/components/ui/breadcrumb";
@@ -52,11 +52,11 @@ import * as Checkbox from "@/components/ui/checkbox";
 import * as Input from "@/components/ui/input";
 import { plainText } from "@/components/ui/markdown";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import {
-  SegmentedControl,
-  SegmentedControlList,
-  SegmentedControlTab,
-} from "@/components/ui/segmented-control";
+// import {
+//   SegmentedControl,
+//   SegmentedControlList,
+//   SegmentedControlTab,
+// } from "@/components/ui/segmented-control";
 import * as Select from "@/components/ui/select";
 import * as StatusBadge from "@/components/ui/status-badge";
 import * as Table from "@/components/ui/table";
@@ -646,6 +646,7 @@ export default function TracesLayout() {
 
             {/* Table Toolbar */}
             <div className='flex h-11 w-full items-center gap-1.5 px-2.5'>
+              {/* TODO: wire up view filtering (All Traces / LLM Calls / Tool Calls / Errors)
               <Select.Root size='xxsmall' defaultValue='all-traces'>
                 <Select.Trigger className='w-fit'>
                   <Select.Value placeholder='Select view' />
@@ -674,10 +675,12 @@ export default function TracesLayout() {
                     </Select.Item>
                   ))}
                 </Select.Content>
-              </Select.Root>
+              </Select.Root> */}
 
-              <TimeRangeFilter />
+              {/* TODO: wire up relative time range filtering
+              <TimeRangeFilter /> */}
 
+              {/* TODO: wire up Traces / Runs view toggle (Runs = flatten all nested spans, reversed per trace)
               <SegmentedControl>
                 <SegmentedControlList
                   className='h-7'
@@ -690,7 +693,7 @@ export default function TracesLayout() {
                   <SegmentedControlTab value='traces'>Traces</SegmentedControlTab>
                   <SegmentedControlTab value='runs'>Runs</SegmentedControlTab>
                 </SegmentedControlList>
-              </SegmentedControl>
+              </SegmentedControl> */}
 
               <Input.Root size='xsmall' className='h-7 w-fit'>
                 <Input.Wrapper>

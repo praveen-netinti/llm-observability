@@ -53,7 +53,7 @@ export function DataTableFilter({ fields, value, onChange, trigger }: Props) {
   };
 
   return (
-    <Dropdown.Root open>
+    <Dropdown.Root>
       <Dropdown.Trigger asChild>
         {trigger ?? (
           <Button.Root

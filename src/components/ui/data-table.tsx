@@ -101,9 +101,7 @@ export interface UseDataTableOptions<TData> {
  * focus) and returns the TanStack table plus a context bundle. Mirrors
  * tablecn's `useDataTable`, extended with manual grouping + range selection.
  */
-export function useDataTable<TData>(
-  options: UseDataTableOptions<TData>,
-): DataTableInstance<TData> {
+export function useDataTable<TData>(options: UseDataTableOptions<TData>): DataTableInstance<TData> {
   const {
     data,
     columns,
@@ -169,10 +167,7 @@ export function useDataTable<TData>(
     () => groups.flatMap((g) => (g.key !== null && collapsed[g.key] ? [] : g.rows)),
     [groups, collapsed],
   );
-  const flatVisibleIds = React.useMemo(
-    () => flatVisibleRows.map((r) => r.id),
-    [flatVisibleRows],
-  );
+  const flatVisibleIds = React.useMemo(() => flatVisibleRows.map((r) => r.id), [flatVisibleRows]);
 
   /* ----------------------------- selection ------------------------------ */
 
@@ -218,8 +213,7 @@ export function useDataTable<TData>(
 
   const toggleAllVisible = React.useCallback(() => {
     setRowSelection((prev) => {
-      const allSelected =
-        flatVisibleIds.length > 0 && flatVisibleIds.every((id) => prev[id]);
+      const allSelected = flatVisibleIds.length > 0 && flatVisibleIds.every((id) => prev[id]);
       const next = { ...prev };
       if (allSelected) {
         for (const id of flatVisibleIds) delete next[id];
@@ -312,7 +306,7 @@ export function DataTableCheckbox({
           "group-data-[focused=true]/row:opacity-100",
           "focus-visible:opacity-100",
           "hover:opacity-100",
-          "scale-95 group-hover/row:scale-100 group-data-[selected=true]/row:scale-100 group-data-[focused=true]/row:scale-100",
+          "scale-95 group-hover/row:scale-100 group-data-[focused=true]/row:scale-100 group-data-[selected=true]/row:scale-100",
         ],
       )}
     />
@@ -336,9 +330,7 @@ export function dataTableSelectColumn<TData>(): ColumnDef<TData, unknown> {
         <DataTableCheckbox
           alwaysVisible={isAllVisibleSelected || isSomeVisibleSelected}
           ariaLabel='Select all'
-          checked={
-            isAllVisibleSelected ? true : isSomeVisibleSelected ? "indeterminate" : false
-          }
+          checked={isAllVisibleSelected ? true : isSomeVisibleSelected ? "indeterminate" : false}
           onToggle={() => toggleAllVisible()}
         />
       );
@@ -491,7 +483,7 @@ function DataTableRoot<TData>({
         <Table.Root className='overflow-x-visible'>{children}</Table.Root>
         {actionBar && selectedCount > 0 && (
           <div className='pointer-events-none sticky inset-x-0 bottom-0 z-20 flex justify-center pb-2'>
-            <div className='pointer-events-auto flex items-center gap-1.5 rounded-xl bg-bg-white-0 p-1.5 pl-3 shadow-regular-md ring-1 ring-stroke-soft-200'>
+            <div className='bg-bg-white-0 shadow-custom-md pointer-events-auto flex h-11 items-center gap-2 rounded-full p-2'>
               {actionBar}
             </div>
           </div>
@@ -605,9 +597,7 @@ function DataTableBody<TData>({
                         key={cell.id}
                         className={cn(
                           "group/cell",
-                          typeof cellClassName === "function"
-                            ? cellClassName(row)
-                            : cellClassName,
+                          typeof cellClassName === "function" ? cellClassName(row) : cellClassName,
                         )}
                       >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -636,10 +626,9 @@ function DataTableActionBar<TData>({
   const { selectedCount } = useDataTableContext<TData>();
   return (
     <>
-      <span className='text-label-sm text-text-strong-950 tabular-nums whitespace-nowrap'>
+      <span className='text-text-strong-950 pl-3 text-xs whitespace-nowrap tabular-nums'>
         {countLabel ? countLabel(selectedCount) : `${selectedCount} selected`}
       </span>
-      <div className='bg-stroke-soft-200 mx-1 h-4 w-px' />
       {children}
     </>
   );

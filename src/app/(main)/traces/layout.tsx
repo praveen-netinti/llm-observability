@@ -13,8 +13,7 @@ import {
   RiArrowUpLongLine,
   RiCheckboxCircleFill,
   RiCloseCircleFill,
-  RiCpuLine,
-  RiDeleteBinLine,
+  RiCloseLine,
   RiFlaskLine,
   RiGitMergeLine,
   RiLayoutLeft2Line,
@@ -817,7 +816,6 @@ export default function TracesLayout() {
   );
 }
 
-
 function TraceBulkActions({
   selectedRows,
   clear,
@@ -825,33 +823,6 @@ function TraceBulkActions({
   selectedRows: FlatSpan[];
   clear: () => void;
 }) {
-  const { addIssue } = useIssues();
-
-  const createIssues = () => {
-    let created = 0;
-    for (const trace of selectedRows) {
-      addIssue({
-        title: `Investigate ${trace.traceName}`,
-        description: trace.error ?? "Flagged from the traces table.",
-        status: "todo",
-        priority: trace.traceStatus === "error" ? "high" : "medium",
-        assignee: null,
-        labels: trace.traceStatus === "error" ? ["bug"] : ["improvement"],
-        project: null,
-        traceId: trace.traceId,
-      });
-      created++;
-    }
-    notification({
-      status: "success",
-      variant: "stroke",
-      title: created > 1 ? `${created} issues created` : "Issue created",
-      description: "Opened from the selected traces.",
-      duration: 4000,
-    });
-    clear();
-  };
-
   const addToEvalSet = () => {
     notification({
       status: "feature",
@@ -863,21 +834,25 @@ function TraceBulkActions({
     clear();
   };
 
-  const single = selectedRows.length === 1;
-
   return (
     <>
-      <Button.Root variant='neutral' mode='stroke' size='xxsmall' onClick={addToEvalSet}>
-        <Button.Icon as={RiFlaskLine} className='size-3.5' />
+      <Button.Root
+        variant='neutral'
+        mode='stroke'
+        size='xxsmall'
+        className='text-text-strong-950 hover:ring-stroke-soft-200 h-7 rounded-full px-2.5'
+        onClick={addToEvalSet}
+      >
         Add to eval set
       </Button.Root>
-      <Button.Root variant='neutral' mode='stroke' size='xxsmall' onClick={createIssues}>
-        <Button.Icon as={RiCpuLine} className='size-3.5' />
-        {single ? "Create issue" : "Create issues"}
-      </Button.Root>
-      <Button.Root variant='error' mode='lighter' size='xxsmall' onClick={clear}>
-        <Button.Icon as={RiDeleteBinLine} className='size-3.5' />
-        Clear
+      <Button.Root
+        variant='neutral'
+        mode='ghost'
+        size='xxsmall'
+        className='size-7 rounded-full p-0'
+        onClick={clear}
+      >
+        <Button.Icon as={RiCloseLine} className='size-4' />
       </Button.Root>
     </>
   );

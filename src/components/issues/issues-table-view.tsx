@@ -295,8 +295,8 @@ export function IssuesTableView({ filter }: Props) {
                         data-connected-top={(isSelected && prevSelected) || undefined}
                         data-connected-bottom={(isSelected && nextSelected) || undefined}
                         className={cn(
-                          "cursor-pointer text-[13px]",
-                          // isFocused && "ring-primary-base ring-1 ring-inset",
+                          "cursor-pointer rounded-lg text-[13px]",
+                          isFocused && "ring-stroke-soft-200 ring-1 ring-inset",
                         )}
                         onClick={(e) => {
                           if (e.shiftKey || e.metaKey || e.ctrlKey) {
@@ -433,7 +433,6 @@ export function IssuesTableView({ filter }: Props) {
                         <Table.Cell className='h-11 flex-1 px-0 last:rounded-r-lg'>
                           <span className='text-text-strong-950 line-clamp-1'>{issue.title}</span>
                         </Table.Cell>
-
 
                         {/* Assignee */}
                         {vis.includes("assignee") && (

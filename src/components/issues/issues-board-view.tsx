@@ -162,8 +162,8 @@ export function IssuesBoardView({ filter }: Props) {
                             </span>
                           )}
                         </div>
-                        <div className='mt-1 flex items-start gap-1.5'>
-                          <div className='mt-0.5' onClick={(e) => e.stopPropagation()}>
+                        <div className='mt-2 flex items-start gap-1.5'>
+                          <div className='' onClick={(e) => e.stopPropagation()}>
                             <Select.Root
                               size='xxsmall'
                               value={item.status}
@@ -194,7 +194,7 @@ export function IssuesBoardView({ filter }: Props) {
                               </Select.Content>
                             </Select.Root>
                           </div>
-                          <p className='text-text-strong-950 m-0 line-clamp-2 flex-1 text-[13px]'>
+                          <p className='text-text-strong-950 m-0 mt-1 line-clamp-2 flex-1 text-[13px]'>
                             {item.title}
                           </p>
                         </div>

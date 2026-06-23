@@ -39,7 +39,7 @@ export default function IssuesLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [display, setDisplay] = useState<DisplayState>({
-    view: "list",
+    view: "board",
     grouping: "status",
     showEmptyGroups: false,
     nestedSubIssues: false,

@@ -39,8 +39,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <Tooltip.Provider delayDuration={600}>
-            {/* <SplashScreen>{children}</SplashScreen> */}
-            {children}
+            <SplashScreen>{children}</SplashScreen>
           </Tooltip.Provider>
         </ThemeProvider>
       </body>
